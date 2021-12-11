@@ -1,0 +1,352 @@
+ <?php
+    defined('BASEPATH') or exit('No direct script access allowed');
+
+    class Business extends MY_Controller
+    {
+
+
+        function __construct()
+        {
+            parent::__construct();
+            $this->load->database();
+            $this->load->model('login_model');
+            $this->load->model('dashboard_model');
+            $this->load->model('employee_model');
+            $this->load->model('business_model');
+            $this->load->model('settings_model');
+            $this->load->model('leave_model');
+        }
+
+        public function index()
+        {
+            if ($this->session->userdata('user_login_access') == 1)
+                redirect('dashboard/Dashboard');
+            $this->load->view('login');
+        }
+
+        public function business()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $data['businesses'] = $this->business_model->getAll();
+                $this->load->view('backend/business', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function save()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $bname = $this->input->post('business');
+                $this->load->library('form_validation');
+                $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
+                $this->form_validation->set_rules('business', $this->lang->line('business_name'), 'trim|required|xss_clean');
+
+                if ($this->form_validation->run() == FALSE) {
+                    $response = array('error' => 1, 'msg' => validation_errors());
+                    echo json_encode($response);
+                } else {
+                    $data = array();
+                    $data = array('name' => $bname);
+                    $success = $this->business_model->Add_Business($data);
+                    $this->session->set_flashdata('feedback', $this->lang->line('success_message'));
+                    echo $this->lang->line('success_message');
+                }
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+        public function delete($id)
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $this->business_model->Delete_Business($id);
+                $this->session->set_flashdata('delsuccess', $this->lang->line('delete_message'));
+                redirect('business/business');
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+        public function edit($id)
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $data['businesses'] = $this->business_model->getAll();
+                $data['editbusiness'] = $this->business_model->getById($id);
+                $this->load->view('backend/business', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+        public function update()
+        {
+
+            if ($this->session->userdata('user_login_access') != False) {
+                $id = $this->input->post('id');
+                $bname = $this->input->post('name');
+                $this->load->library('form_validation');
+                $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
+                $this->form_validation->set_rules('name', $this->lang->line('business_name'), 'trim|required|xss_clean');
+
+                if ($this->form_validation->run() == FALSE) {
+                    $response = array('error' => 1, 'msg' => validation_errors());
+                    echo json_encode($response);
+                } else {
+                    $data = array();
+                    $data = array('name' => $bname);
+                    $this->business_model->update_Business($id, $data);
+                    $this->session->set_flashdata('feedback', $this->lang->line('update_message'));
+                    echo $this->lang->line('update_message');
+                }
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+
+        // Get leave details hourly
+        public function Get_BusinessDetails()
+        {
+            $business_id   = $this->input->get('business_id');
+
+            $report = $this->business_model->GetEmployeeByBusinessId($business_id);
+
+            if (is_array($report) || is_object($report)) {
+                foreach ($report as $value) {
+                    echo "<tr>
+                        <td>$value->business</td>
+                        <td>$value->full_name</td>
+                        <td>$value->em_code</td>
+                        <td>$value->em_email</td>
+                        <td>$value->em_phone hours</td>
+                        <td>$value->em_role</td>
+                        <td>$value->em_credit</td>
+                        <td class='jsgrid-align-center'>
+                            <a href='" . base_url() . "business/edit_employee?id=" . base64_encode($value->id) . "' title='" . $this->lang->line('edit') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-pencil-square-o'></i></a>
+                            <a onclick='return confirm(\"" . $this->lang->line('are_you_sure_to_delete_this') . "\")' href='" . base_url() . "business/delete_employee/" . base64_encode($value->id) . "' title='" . $this->lang->line('delete') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-trash-o'></i></a>
+                        </td>
+                    </tr>";
+                }
+            } else {
+                echo "<p>No Data Found</p>";
+            }
+        }
+
+        public function business_employees()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $data['businesses'] = $this->business_model->getAll();
+                $this->load->view('backend/business_employees', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function add_employee($business_id = null)
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $data['business_id'] = $business_id;
+                $data['businesses'] = $this->business_model->getAll();
+                $this->load->view('backend/business-add-employee', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function edit_employee()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $id = base64_decode($this->input->get('id'));
+
+                if ($this->session->userdata('user_login_id') == $id) {
+                    $data['isprofile'] = true;
+                } else {
+                    $data['isprofile'] = false;
+                }
+                $data['businesses'] = $this->business_model->getAll();
+                $data['basic'] = $this->business_model->GetEmployeeById($id);
+                $data['permanent'] = $this->business_model->GetperAddress($id);
+                $data['present'] = $this->business_model->GetpreAddress($id);
+                $this->load->view('backend/business_employee_view', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function save_employee()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $id = $this->input->post('id');
+                $em_code = $this->input->post('em_code');
+                $full_name = $this->input->post('full_name');
+                $business_id = $this->input->post('business_id');
+                $em_role = $this->input->post('em_role');
+                $em_gender = $this->input->post('em_gender');
+                $em_phone = $this->input->post('em_phone');
+                $em_birthday = $this->input->post('em_birthday');
+                $em_email = $this->input->post('em_email');
+                $em_blood_group = $this->input->post('em_blood_group');
+                $em_job_title = $this->input->post('em_job_title');
+                $em_credit = $this->input->post('em_credit');
+                $status = $this->input->post('status');
+                $password = sha1($em_phone);
+                $this->load->library('form_validation');
+                $this->form_validation->set_error_delimiters();
+                // Validating Name Field
+                $this->form_validation->set_rules('business_id', $this->lang->line('business'), 'trim|required|xss_clean');
+                $this->form_validation->set_rules('em_phone', $this->lang->line('phone'), 'trim|required|min_length[10]|max_length[15]|xss_clean');
+                /*validating email field*/
+                $this->form_validation->set_rules('em_email', $this->lang->line('email'), 'trim|required|min_length[7]|max_length[100]|xss_clean');
+
+                if ($this->form_validation->run() == FALSE) {
+                    $response = array('error' => 1, 'msg' => validation_errors());
+                    echo json_encode($response);
+                } else {
+                    if ($this->business_model->is_email_exists($em_email) && $this->business_model->is_email_exists($em_email)->id != $id) {
+                        $this->session->set_flashdata('formdata', $this->lang->line('email_already_exist'));
+                        $response = array('error' => 1, 'msg' => $this->lang->line('email_already_exist'));
+                        echo json_encode($response);
+                    } else {
+                        $img_url = "";
+                        if ($_FILES['image_url']['name']) {
+
+                            $uploaddir = './assets/images/business/';
+                            if (!is_dir($uploaddir) && !mkdir($uploaddir)) {
+                                die("Error creating folder " . base_url() . $uploaddir);
+                            }
+
+                            $image_name = str_replace(" ", "", $full_name) . date("YmdHis");
+
+                            $config = array(
+                                'file_name' => $image_name,
+                                'upload_path' => $uploaddir,
+                                'allowed_types' => "gif|jpg|png|jpeg",
+                                'overwrite' => False,
+                                'max_size' => "2048000", // Can be set to particular file size , here it is 2 MB(2048 Kb)
+                                'max_height' => "1000",
+                                'max_width' => "1000"
+                            );
+
+                            $this->load->library('Upload', $config);
+                            $this->upload->initialize($config);
+                            if (!$this->upload->do_upload('image_url')) {
+                                $response = array('error' => 1, 'msg' => $this->upload->display_errors());
+                                echo json_encode($response);
+                                return;
+                            } else {
+                                $path = $this->upload->data();
+                                $img_url = $path['file_name'];
+                            }
+                        }
+                        $data = array(
+                            'em_code' => $em_code,
+                            'full_name' => $full_name,
+                            'business_id' => $business_id,
+                            'em_email' => $em_email,
+                            'em_role' => $em_role,
+                            'em_gender' => $em_gender,
+                            'status' => 'ACTIVE',
+                            'em_phone' => $em_phone,
+                            'em_birthday' => $em_birthday,
+                            'em_job_title' => $em_job_title,
+                            'em_blood_group' => $em_blood_group,
+                            'em_credit' => $em_credit
+                        );
+
+                        if (!empty($img_url)) {
+                            $data['em_image'] = $img_url;
+                        }
+
+                        if (!empty($status)) {
+                            $data['status'] = $status;
+                        }
+
+                        if (!empty($id)) {
+                            $success = $this->business_model->update_employee($data, $id);
+                            echo $this->lang->line('update_message');
+                        } else {
+                            $data['em_password'] = $password;
+                            $success = $this->business_model->add_employee($data);
+                            echo $this->lang->line('success_message');
+                        }
+                    }
+                }
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function save_address()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $id = $this->input->post('id');
+                $em_id = $this->input->post('emid');
+                $type = $this->input->post('type');
+                $address = $this->input->post('address');
+                $city = $this->input->post('city');
+                $country = $this->input->post('country');
+                $this->load->library('form_validation');
+                $this->form_validation->set_error_delimiters();
+                $this->form_validation->set_rules('address', 'address', 'trim|required|min_length[5]|max_length[100]|xss_clean');
+
+                if ($this->form_validation->run() == FALSE) {
+                    $response = array('error' => 1, 'msg' => validation_errors());
+                    echo json_encode($response);
+                } else {
+                    $data = array();
+                    $data = array(
+                        'emp_id' => $em_id,
+                        'city' => $city,
+                        'country' => $country,
+                        'address' => $address,
+                        'type' => $type
+                    );
+                    if (empty($id)) {
+                        $success = $this->business_model->add_employee_address($data);
+                        $this->session->set_flashdata('feedback', 'Successfully Added');
+                        echo "Successfully Updated";
+                    } else {
+                        $success = $this->business_model->update_employee_address($id, $data);
+                        $this->session->set_flashdata('feedback', 'Successfully Updated');
+                        echo "Successfully Added";
+                    }
+                }
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function reset_password()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+
+                $id = $this->input->post('emid');
+                $employee = $this->business_model->GetEmployeeById($id);
+                if ($this->session->userdata('user_login_id') == $id) {
+                    $oldp = sha1($this->input->post('old'));
+                    if ($employee->em_password != $oldp) {
+                        $this->session->set_flashdata('feedback', $this->lang->line('current_password_incorrect'));
+                        $response = array('error' => 1, 'msg' => $this->lang->line('current_password_incorrect'));
+                        echo json_encode($response);
+                        return;
+                    }
+                }
+
+                $pass = $this->input->post('new1');
+                $confirm = $this->input->post('new2');
+
+                if ($pass == $confirm) {
+                    $data = array(
+                        'em_password' => sha1($pass)
+                    );
+                    $this->business_model->update_employee($data, $id);
+                    $this->session->set_flashdata('feedback', 'Successfully Updated');
+                    echo $this->lang->line('password_changed_successfully');
+                } else {
+                    $this->session->set_flashdata('feedback', $this->lang->line('confirm_password_incorrect'));
+                    $response = array('error' => 1, 'msg' => $this->lang->line('confirm_password_incorrect'));
+                    echo json_encode($response);
+                }
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+    }
