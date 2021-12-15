@@ -49,6 +49,11 @@ class Transactions_model extends CI_Model
     }
   }
 
+  public function delete($id)
+  {
+    $this->db->delete('business_transactions', array('id' => $id));
+  }
+
   public function getBusinessTransactions($business_id = null)
   {
     $this->db->select('business.id as business_id, business.name as business, sum(case business_transactions.status when "PENDING" then 1 else 0 end) as pending_count, count(business_transactions.id) as total_count, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as total_price');
@@ -85,13 +90,77 @@ class Transactions_model extends CI_Model
         $this->db->where("business_transactions.buy_date <= $value");
       }
       if($key == 'business_id'){
-        $this->db->where("business.id = $value");
+        $this->db->where("business.id", $value);
       }
       if($key == 'emp_id'){
-        $this->db->where("business_transactions.emp_id = $value");
+        $this->db->where("business_transactions.emp_id", $value);
+      }
+      if($key == 'status'){
+        $this->db->where("business_transactions.status", $value);
+      }
+      if($key == 'payment_id'){
+        $this->db->where("business_transactions.payment_id", $value);
       }
     }
 
     return $this->db->get()->result_array();
   }
+
+  public function bulk_updateTransactions($ids, $data){
+    if(!empty($ids)){
+      $this->db->where_in('id', $ids);
+      $this->db->update('business_transactions', $data);
+    }
+  }
+
+  public function getBusinessPayments($id = null){
+    $this->db->select('business_payments.*, business.name as business')->from('business_payments');
+    $this->db->join('business', 'business_payments.business_id = business.id');
+    if ($id != null) {
+      $this->db->where('business_payments.id', $id);
+    }
+
+    $query = $this->db->get();
+    if ($id != null) {
+      return $query->row_array();
+    } else {
+      return $query->result_array();
+    }
+  }
+
+  public function getLastPayment($business_id){
+    $this->db->select('business_payments.*')->from('business_payments');
+    $this->db->where('business_payments.business_id', $business_id);
+    $this->db->order_by('business_payments.id', 'desc');
+    $this->db->limit(1);
+
+    $query = $this->db->get();
+    return $query->row_array();
+  }
+
+  public function addPayment($data)
+  {
+
+    $this->db->trans_start(); # Starting Transaction
+    $this->db->trans_strict(false); # See Note 01. If you wish can remove as well
+    //=======================Code Start===========================
+    if (isset($data['id']) && $data['id'] != '') {
+
+      $this->db->where('id', $data['id']);
+      $query = $this->db->update('business_payments', $data);
+      $insert_id = $data['id'];
+    } else {
+      $this->db->insert('business_payments', $data);
+      $insert_id = $this->db->insert_id();
+    }
+
+    $this->db->trans_complete(); # Completing transaction
+    if ($this->db->trans_status() === false) {
+      $this->db->trans_rollback();
+      return false;
+    } else {
+      return $insert_id;
+    }
+  }
+
 }

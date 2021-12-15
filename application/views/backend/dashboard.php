@@ -163,7 +163,7 @@
                                 <h4 class="card-title my-2"><i class="fa fa-credit-card"></i> <?php echo $this->lang->line('credit_shop') ?></h4>
                             </div>
                             <div class="input-group col-md-6 searchbox">
-                                <input class="form-control py-2" type="search" value="" id="businessemploysearch" placeholder="Name, Email, Phone, PIN, Job Title, Business...">
+                                <input class="form-control py-2" type="search" value="" id="businessemployeesearch" placeholder="Name, Email, Phone, PIN, Job Title, Business...">
                                 <span class="input-group-append">
                                     <button class="btn btn-secondary searchbtn" type="button">
                                         <i class="fa fa-search"></i>
@@ -183,7 +183,8 @@
                                         <th><?php echo $this->lang->line('email') ?></th>
                                         <th><?php echo $this->lang->line('phone') ?></th>
                                         <th><?php echo $this->lang->line('job_title') ?></th>
-                                        <th><?php echo $this->lang->line('credit') ?></th>
+                                        <th><?php echo $this->lang->line('approved_credit') ?></th>
+                                        <th><?php echo $this->lang->line('pending_credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
@@ -247,16 +248,17 @@
             </div>
         </div>
         <!-- Row -->
-<?php $this->load->view('backend/credit_shop_modal'); ?>
+        <?php $this->load->view('backend/credit_shop_modal'); ?>
         <script>
-            function creditshop(emp_id){
-                var business = $('.td_business_'+emp_id).html();
-                var name = $('.td_name_'+emp_id).html();
-                var pin = $('.td_pin_'+emp_id).html();
-                var email = $('.td_email_'+emp_id).html();
-                var phone = $('.td_phone_'+emp_id).html();
-                var credit = $('.td_credit_'+emp_id).html();
-                var jobtitle = $('.td_jobtitle_'+emp_id).html();
+            function creditshop(emp_id) {
+                var business = $('.td_business_' + emp_id).html();
+                var name = $('.td_name_' + emp_id).html();
+                var pin = $('.td_pin_' + emp_id).html();
+                var email = $('.td_email_' + emp_id).html();
+                var phone = $('.td_phone_' + emp_id).html();
+                var credit = $('.td_credit_' + emp_id).html();
+                var pending_credit = $('.td_pending_credit_' + emp_id).html();
+                var jobtitle = $('.td_jobtitle_' + emp_id).html();
 
                 $('.modal_employee_pin').html(pin);
                 $('.modal_employee_name').html(name);
@@ -264,9 +266,12 @@
                 $('.modal_employee_phone').html(phone);
                 $('.modal_employee_business').html(business);
                 $('.modal_employee_credit').html(credit);
+                $('.modal_pending_credit').html(pending_credit);
                 $('.modal_employee_jobtitle').html(jobtitle);
 
-                $('.bill_preview').attr('src','');
+                $('.bill_preview').attr('src', '');
+                $('#credit_sold_cost').attr('max', credit-pending_credit);
+                
                 $('#modal_bill_file').val('');
                 $('#modal_emp_id').val(emp_id);
                 $('#creditshopmodel').modal('show');
@@ -307,8 +312,16 @@
                     searchEmployeesByFullText();
                 });
 
+                $('#businessemployeesearch').keypress(function(e) {
+                    var key = e.which;
+                    if (key == 13) // the enter key code
+                    {
+                        searchEmployeesByFullText();
+                    }
+                });
+
                 $('#modal_bill_file').change(function(event) {
-                    $(".bill_preview").fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
+                    $(".bill_preview").fadeIn("fast").attr('src', URL.createObjectURL(event.target.files[0]));
                 })
             });
         </script>

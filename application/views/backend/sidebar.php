@@ -45,9 +45,10 @@
                         </li>                                                                       
                         <?php } else { ?>
 
-                        <li> <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i class="fa fa-building-o"></i><span class="hide-menu"><?php echo $this->lang->line('business') ?></span></a>
+                        <li> <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i style="padding-top: 4.75px; padding-bottom: 4.75px;" class="fa fa-building-o"></i><span class="hide-menu"><?php echo $this->lang->line('business') ?></span></a>
                             <ul aria-expanded="false" class="collapse">
                                 <li><a href="<?php echo base_url();?>business/business"><?php echo $this->lang->line('business') ?> </a></li>
+                                <li><a href="<?php echo base_url();?>business/business_role"><?php echo $this->lang->line('business_role') ?> </a></li>
                                 <li><a href="<?php echo base_url();?>business/business_employees"><?php echo $this->lang->line('business_employees') ?></a></li>
                             </ul>
                         </li>
@@ -55,6 +56,7 @@
                             <ul aria-expanded="false" class="collapse">
                                 <li><a href="<?php echo base_url(); ?>transaction/transactions"><?php echo $this->lang->line('transactions')?> </a></li>
                                 <li><a href="<?php echo base_url(); ?>transaction/business_transaction"><?php echo $this->lang->line('transactions_by_business')?> </a></li>
+                                <li><a href="<?php echo base_url(); ?>transaction/business_payments"><?php echo $this->lang->line('payment_history')?> </a></li>
                             </ul>
                         </li>
                         <li> <a class="has-arrow waves-effect waves-dark" href="#" aria-expanded="false"><i class="fa fa-building-o"></i><span class="hide-menu">Organization </span></a>

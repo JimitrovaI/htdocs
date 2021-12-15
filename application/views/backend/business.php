@@ -15,7 +15,7 @@
     <div class="message"></div>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-lg-5">
+            <div class="col-lg-4">
                 <?php if (isset($editbusiness)) { ?>
                     <div class="card card-outline-info">
                         <div class="card-header">
@@ -36,6 +36,34 @@
                                                 <label class="control-label"><?php echo $this->lang->line('business_name') ?></label>
                                                 <input type="text" name="name" id="firstName" value="<?php echo $editbusiness->name; ?>" class="form-control" placeholder="">
                                                 <input type="hidden" name="id" value="<?php echo $editbusiness->id; ?>">
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('government_id') ?></label>
+                                                <input type="text" name="government_id" id="government_id" value="<?php echo $editbusiness->government_id; ?>" class="form-control" placeholder="" minlength="3" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('contact_person') ?></label>
+                                                <input type="text" name="contact_person" id="contact_person" value="<?php echo $editbusiness->contact_person; ?>" class="form-control" placeholder="" minlength="3" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('contact_email') ?></label>
+                                                <input type="email" name="contact_email" id="contact_email" value="<?php echo $editbusiness->contact_email; ?>" class="form-control" placeholder="" minlength="3" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('contact_phone') ?></label>
+                                                <input type="text" name="contact_phone" id="contact_phone" value="<?php echo $editbusiness->contact_phone; ?>" class="form-control" placeholder="" minlength="3" required>
                                             </div>
                                         </div>
                                         <!--/span-->
@@ -70,6 +98,34 @@
                                                 <input type="text" name="business" id="firstName" value="" class="form-control" placeholder="" minlength="3" required>
                                             </div>
                                         </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('government_id') ?></label>
+                                                <input type="text" name="government_id" id="government_id" value="" class="form-control" placeholder="" minlength="3" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('contact_person') ?></label>
+                                                <input type="text" name="contact_person" id="contact_person" value="" class="form-control" placeholder="" minlength="3" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('contact_email') ?></label>
+                                                <input type="email" name="contact_email" id="contact_email" value="" class="form-control" placeholder="" minlength="3" required>
+                                            </div>
+                                        </div>
+
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label class="control-label"><?php echo $this->lang->line('contact_phone') ?></label>
+                                                <input type="text" name="contact_phone" id="contact_phone" value="" class="form-control" placeholder="" minlength="3" required>
+                                            </div>
+                                        </div>
                                         <!--/span-->
                                     </div>
                                     <!--/row-->
@@ -83,7 +139,7 @@
                 <?php } ?>
             </div>
 
-            <div class="col-lg-7">
+            <div class="col-lg-8">
                 <div class="card card-outline-info">
                     <div class="card-header">
                         <h4 class="m-b-0 text-white"><?php echo $this->lang->line('business_list') ?></h4>
@@ -94,13 +150,15 @@
                             <table id="" class="display  table table-hover table-striped table-bordered" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
-                                        <th><?php echo $this->lang->line('business_name') ?></th>
+                                        <th><?php echo $this->lang->line('business') ?></th>
+                                        <th><?php echo $this->lang->line('contact') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
                                 <tfoot>
                                     <tr>
-                                        <th><?php echo $this->lang->line('business_name') ?></th>
+                                        <th><?php echo $this->lang->line('business') ?></th>
+                                        <th><?php echo $this->lang->line('contact') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </tfoot>
@@ -108,7 +166,15 @@
                                 <tbody>
                                     <?php foreach ($businesses as $value) { ?>
                                         <tr>
-                                            <td><?php echo $value->name; ?></td>
+                                            <td>
+                                                <?php echo $value->name; ?><br>
+                                                <small><?php echo $this->lang->line('government_id') ?>: <?php echo $value->government_id; ?></small>
+                                            </td>
+                                            <td>
+                                                <?php echo $value->contact_person; ?><br>
+                                                <small><?php echo $this->lang->line('email') ?>: <?php echo $value->contact_email; ?></small><br>
+                                                <small><?php echo $this->lang->line('phone') ?>: <?php echo $value->contact_phone; ?></small>
+                                            </td>
                                             <td class="jsgrid-align-center ">
                                                 <a href="<?php echo base_url(); ?>business/edit/<?php echo $value->id; ?>" title="<?php echo $this->lang->line('edit') ?>" class="btn btn-sm btn-info waves-effect waves-light"><i class="fa fa-pencil-square-o"></i></a>
                                                 <a onclick="return confirm('<?php echo $this->lang->line('are_you_sure_to_delete_this') ?>?')" href="<?php echo base_url(); ?>business/delete/<?php echo $value->id; ?>" title="<?php echo $this->lang->line('delete') ?>" class="btn btn-sm btn-info waves-effect waves-light"><i class="fa fa-trash-o"></i></a>

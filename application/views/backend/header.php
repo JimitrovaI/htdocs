@@ -122,8 +122,8 @@ date_default_timezone_set('Asia/Dhaka');
                     </style>
                     <div class="langdiv" style="display: inline-block;">
                         <select class="languageselectpicker" onchange="set_languages(this.value)" type="text" id="languageSwitcher">
-                            <option data-content='<span class="flag-icon flag-icon-us"></span> English' <?php if($this->session->userdata('language') == "english") echo "Selected" ?> value="english"> English </option>
-                            <option data-content='<span class="flag-icon flag-icon-es"></span> Española' <?php if($this->session->userdata('language') == "spanish") echo "Selected" ?> value="spanish"> Española </option>
+                            <option data-content='<span class="flag-icon flag-icon-us"></span> English' <?php if($this->session->userdata('language') == "English") echo "Selected" ?> value="English"> English </option>
+                            <option data-content='<span class="flag-icon flag-icon-es"></span> Española' <?php if($this->session->userdata('language') == "Spanish") echo "Selected" ?> value="Spanish"> Española </option>
                         </select>
                     </div>
                     <ul class="navbar-nav my-lg-0">

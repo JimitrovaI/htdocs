@@ -38,6 +38,10 @@
         {
             if ($this->session->userdata('user_login_access') != False) {
                 $bname = $this->input->post('business');
+                $government_id = $this->input->post('government_id');
+                $contact_person = $this->input->post('contact_person');
+                $contact_email = $this->input->post('contact_email');
+                $contact_phone = $this->input->post('contact_phone');
                 $this->load->library('form_validation');
                 $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
                 $this->form_validation->set_rules('business', $this->lang->line('business_name'), 'trim|required|xss_clean');
@@ -47,8 +51,17 @@
                     echo json_encode($response);
                 } else {
                     $data = array();
-                    $data = array('name' => $bname);
+                    $data = array('name' => $bname, 'government_id' => $government_id, 'contact_person' => $contact_person, 'contact_email' => $contact_email, 'contact_phone' => $contact_phone);
                     $success = $this->business_model->Add_Business($data);
+
+                    if ($success) {
+                        $role_manager = array('business_id' => $success, 'role' => 'Manager', 'credit' => 100);
+                        $this->business_model->Add_BusinessRole($role_manager);
+
+                        $role_default = array('business_id' => $success, 'role' => 'Default', 'credit' => 10);
+                        $this->business_model->Add_BusinessRole($role_default);
+                    }
+
                     $this->session->set_flashdata('feedback', $this->lang->line('success_message'));
                     echo $this->lang->line('success_message');
                 }
@@ -82,6 +95,11 @@
             if ($this->session->userdata('user_login_access') != False) {
                 $id = $this->input->post('id');
                 $bname = $this->input->post('name');
+                $government_id = $this->input->post('government_id');
+                $contact_person = $this->input->post('contact_person');
+                $contact_email = $this->input->post('contact_email');
+                $contact_phone = $this->input->post('contact_phone');
+
                 $this->load->library('form_validation');
                 $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
                 $this->form_validation->set_rules('name', $this->lang->line('business_name'), 'trim|required|xss_clean');
@@ -91,8 +109,98 @@
                     echo json_encode($response);
                 } else {
                     $data = array();
-                    $data = array('name' => $bname);
+                    $data = array('name' => $bname, 'government_id' => $government_id, 'contact_person' => $contact_person, 'contact_email' => $contact_email, 'contact_phone' => $contact_phone);
                     $this->business_model->update_Business($id, $data);
+                    $this->session->set_flashdata('feedback', $this->lang->line('update_message'));
+                    echo $this->lang->line('update_message');
+                }
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+
+
+        public function business_role()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $data['businesses'] = $this->business_model->getAll();
+                $data['business_roles'] = $this->business_model->getRoles();
+                $this->load->view('backend/business_role', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function save_role()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $business_id = $this->input->post('business_id');
+                $role = $this->input->post('role');
+                $credit = $this->input->post('credit');
+                $this->load->library('form_validation');
+                $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
+                $this->form_validation->set_rules('business_id', $this->lang->line('business'), 'trim|required|xss_clean');
+                $this->form_validation->set_rules('role', $this->lang->line('role'), 'trim|required|xss_clean');
+                $this->form_validation->set_rules('credit', $this->lang->line('credit'), 'trim|required|xss_clean');
+
+                if ($this->form_validation->run() == FALSE) {
+                    $response = array('error' => 1, 'msg' => validation_errors());
+                    echo json_encode($response);
+                } else {
+                    $data = array();
+                    $data = array('business_id' => $business_id, 'role' => $role, 'credit' => $credit);
+                    $success = $this->business_model->Add_BusinessRole($data);
+                    $this->session->set_flashdata('feedback', $this->lang->line('success_message'));
+                    echo $this->lang->line('success_message');
+                }
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+        public function delete_role($id)
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $this->business_model->Delete_BusinessRole($id);
+                $this->session->set_flashdata('delsuccess', $this->lang->line('delete_message'));
+                redirect('business/business_role');
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function edit_role($id)
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $data['businesses'] = $this->business_model->getAll();
+                $data['business_roles'] = $this->business_model->getRoles();
+                $data['editrole'] = $this->business_model->getRoles($id);
+                $this->load->view('backend/business_role', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+        public function update_role()
+        {
+
+            if ($this->session->userdata('user_login_access') != False) {
+                $id = $this->input->post('id');
+                $business_id = $this->input->post('business_id');
+                $role = $this->input->post('role');
+                $credit = $this->input->post('credit');
+                $this->load->library('form_validation');
+                $this->form_validation->set_error_delimiters('<div class="error">', '</div>');
+                $this->form_validation->set_rules('business_id', $this->lang->line('business'), 'trim|required|xss_clean');
+                $this->form_validation->set_rules('role', $this->lang->line('role'), 'trim|required|xss_clean');
+                $this->form_validation->set_rules('credit', $this->lang->line('credit'), 'trim|required|xss_clean');
+
+                if ($this->form_validation->run() == FALSE) {
+                    $response = array('error' => 1, 'msg' => validation_errors());
+                    echo json_encode($response);
+                } else {
+                    $data = array();
+                    $data = array('id' => $id, 'business_id' => $business_id, 'role' => $role, 'credit' => $credit);
+                    $success = $this->business_model->Add_BusinessRole($data);
                     $this->session->set_flashdata('feedback', $this->lang->line('update_message'));
                     echo $this->lang->line('update_message');
                 }
@@ -111,14 +219,27 @@
 
             if (is_array($report) || is_object($report)) {
                 foreach ($report as $value) {
+                    $em_role = $value->business_role;
+                    if (empty($em_role)) {
+                        $em_role = $this->lang->line('default');
+                    }
+
+                    $em_credit = $value->em_credit;
+                    if (empty($em_credit)) {
+                        $em_credit = $value->role_credit;
+                        if (empty($em_credit)) {
+                            $em_credit = $value->default_credit;
+                        }
+                    }
+
                     echo "<tr>
                         <td>$value->business</td>
                         <td>$value->full_name</td>
                         <td>$value->em_code</td>
                         <td>$value->em_email</td>
                         <td>$value->em_phone hours</td>
-                        <td>$value->em_role</td>
-                        <td>$value->em_credit</td>
+                        <td>$em_role</td>
+                        <td>$em_credit</td>
                         <td class='jsgrid-align-center'>
                             <a href='" . base_url() . "business/edit_employee?id=" . base64_encode($value->id) . "' title='" . $this->lang->line('edit') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-pencil-square-o'></i></a>
                             <a onclick='return confirm(\"" . $this->lang->line('are_you_sure_to_delete_this') . "\")' href='" . base_url() . "business/delete_employee/" . base64_encode($value->id) . "' title='" . $this->lang->line('delete') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-trash-o'></i></a>
@@ -163,6 +284,8 @@
                 }
                 $data['businesses'] = $this->business_model->getAll();
                 $data['basic'] = $this->business_model->GetEmployeeById($id);
+                $data['roles'] = $this->business_model->getRoles($data['basic']->business_id, true);
+
                 $data['permanent'] = $this->business_model->GetperAddress($id);
                 $data['present'] = $this->business_model->GetpreAddress($id);
                 $this->load->view('backend/business_employee_view', $data);
@@ -178,7 +301,7 @@
                 $em_code = $this->input->post('em_code');
                 $full_name = $this->input->post('full_name');
                 $business_id = $this->input->post('business_id');
-                $em_role = $this->input->post('em_role');
+                $em_role_id = $this->input->post('em_role_id');
                 $em_gender = $this->input->post('em_gender');
                 $em_phone = $this->input->post('em_phone');
                 $em_birthday = $this->input->post('em_birthday');
@@ -241,7 +364,7 @@
                             'full_name' => $full_name,
                             'business_id' => $business_id,
                             'em_email' => $em_email,
-                            'em_role' => $em_role,
+                            'em_role_id' => $em_role_id,
                             'em_gender' => $em_gender,
                             'status' => 'ACTIVE',
                             'em_phone' => $em_phone,
@@ -347,6 +470,70 @@
                 }
             } else {
                 redirect(base_url(), 'refresh');
+            }
+        }
+
+
+        public function import()
+        {
+            $business_id = $this->input->post('business_id');
+            $this->load->library('csvimport');
+            $file_data = $this->csvimport->get_array($_FILES["csv_file"]["tmp_name"]);
+            //echo $file_data;
+            $added = 0;
+            $updated = 0;
+            foreach ($file_data as $row) {
+
+                $role = $row['Role'];
+                $role_id = $this->business_model->getBusinessRolebyRole($role, $business_id);
+
+                $duplicate = $this->business_model->is_email_exists($row["Email"]);
+
+                $birthday = '';
+                if (empty($row["DoB"])) {
+                    $birthday = date('Y-m-d', strtotime($row["DoB"]));
+                }
+                //print_r($duplicate);
+
+                $data = array();
+                $data = array(
+                    'em_code' => $row["Employee Code"],
+                    'business_id' => $business_id,
+                    'full_name' => $row["Full Name"],
+                    'em_email' => $row["Email"],
+                    'em_phone' => $row["Phone"],
+                    'em_password' => sha1($row["Phone"]),
+                    'em_gender' => $row["Gender"],
+                    'em_role_id' => $role_id,
+                    'em_job_title' => $row["Job Title"],
+                    'em_birthday' => $birthday,
+                );
+                if (!empty($duplicate)) {
+                    $data['id'] = $duplicate->id;
+                    $updated++;
+                } else {
+                    $added++;
+                }
+                $this->business_model->add_employee($data);
+            }
+            echo "Success Import<br>Added: $added, Updated: $updated";
+        }
+
+        public function getRoleByBusinessId()
+        {
+            $business_id = $this->input->post('business_id');
+            if (empty($business_id)) {
+                $response = array('success' => 1, 'data' => '');
+                echo json_encode($response);
+            } else {
+                $roles = $this->business_model->getRoles($business_id, true);
+                
+                $options = '';
+                foreach($roles as $role) {
+                    $options .= '<option value="'.$role['id'].'">'.$role['role'].' ('.$this->lang->line('credit').': '.$role['credit'] .')</option>';
+                }
+                $response = array('success' => 1, 'data' => $options);
+                echo json_encode($response);
             }
         }
     }

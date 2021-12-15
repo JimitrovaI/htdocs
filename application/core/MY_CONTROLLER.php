@@ -14,7 +14,7 @@ class MY_Controller extends CI_Controller
         if ($this->session->has_userdata('language')) {
             $language = $this->session->userdata('language');
         } else {
-            $language = 'english';
+            $language = 'English';
         }
 
         $this->config->set_item('language', $language);

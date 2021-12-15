@@ -42,7 +42,7 @@
                             <img src="" class="bill_preview" width="100%" style="display:none;" />
                             <div class="form-group">
                                 <label class="control-label"><?php echo $this->lang->line('bill') ?></label>
-                                <input type="file" id="modal_bill_file" name="bill" value="" class="form-control" id="recipient-name1" required>
+                                <input type="file" id="modal_bill_file" name="bill" value="" class="form-control"  required>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -52,11 +52,11 @@
                             </div>
                             <div class="form-group">
                                 <label class="control-label">Date</label>
-                                <input type="text" name="buy_date" value="" class="form-control mydatepicker" id="recipient-name1">
+                                <input type="text" name="buy_date" value="" class="form-control mydatepicker" id="credit_sold_date">
                             </div>
                             <div class="form-group">
-                                <label class="control-label"><?php echo $this->lang->line('prices') ?> (<?php echo $this->lang->line('approved_credit') ?>:<span class="modal_employee_credit"></span>)</label>
-                                <input type="number" name="cost" value="" class="form-control" id="recipient-name1" required>
+                                <label class="control-label"><?php echo $this->lang->line('prices') ?> (<?php echo $this->lang->line('approved_credit') ?>:<span class="modal_employee_credit"></span> - <?php echo $this->lang->line('pending_credit') ?>:<span class="modal_pending_credit"></span>)</label>
+                                <input type="number" name="cost" value="" class="form-control" id="credit_sold_cost" required>
                             </div>
                         </div>
                     </div>

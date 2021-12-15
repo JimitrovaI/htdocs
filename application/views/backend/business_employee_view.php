@@ -87,9 +87,11 @@
                                                 <?php if ($this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
                                                     <div class="form-group col-md-4 m-t-10">
                                                         <label><?php echo $this->lang->line('role') ?> </label>
-                                                        <select name="role" class="form-control custom-select" required>
-                                                            <option <?php if ($basic->em_role == 'EMPLOYEE') echo "Selected" ?> value="EMPLOYEE">Employee</option>
-                                                            <option <?php if ($basic->em_role == 'MANAGER') echo "Selected" ?> value="MANAGER">Business Manager</option>
+                                                        <select name="em_role_id" id="business_roles" class="form-control custom-select">
+                                                            <option value=""><?php echo $this->lang->line('select_role') ?></option>
+                                                            <?php foreach ($roles as $role) { ?>
+                                                                <option <?php if ($role['id'] == $basic->em_role_id) echo "Selected" ?> value="<?php echo $role['id'] ?>"><?php echo $role['role'] ?> (<?php echo $this->lang->line('credit') ?>: <?php echo $role['credit'] ?>)</option>
+                                                            <?php } ?>
                                                         </select>
                                                     </div>
                                                 <?php } ?>
@@ -114,7 +116,7 @@
                                                 <?php if ($this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
                                                     <div class="form-group col-md-4 m-t-10">
                                                         <label><?php echo $this->lang->line('business') ?></label>
-                                                        <select name="business_id" value="" class="form-control custom-select" required>
+                                                        <select name="business_id" id="business_id" value="" class="form-control custom-select" required>
                                                             <option value=""><?php echo $this->lang->line('select_business') ?> </option>
                                                             <?Php foreach ($businesses as $business) : ?>
                                                                 <option <?php if ($basic->business_id == $business->id) echo 'Selected' ?> value="<?php echo $business->id ?>"><?php echo $business->name ?></option>
@@ -131,7 +133,7 @@
                                                     <input type="text" id="bs_em_job_title" name="em_job_title" class="form-control" <?php if ($this->session->userdata('user_type') == 'EMPLOYEE') { ?> readonly <?php } ?> value="<?php echo $basic->em_job_title; ?>" placeholder="">
                                                 </div>
                                                 <div class="form-group col-md-4 m-t-10">
-                                                    <label><?php echo $this->lang->line('credit') ?> </label>
+                                                    <label><?php echo $this->lang->line('custom_credit') ?> </label>
                                                     <input type="text" id="bs_em_credit" name="em_credit" class="form-control" <?php if ($this->session->userdata('user_type') == 'EMPLOYEE') { ?> readonly <?php } ?> value="<?php echo $basic->em_credit; ?>" placeholder="">
                                                 </div>
                                                 <div class="form-group col-md-12 m-t-10">
@@ -249,5 +251,26 @@
             </div>
             <!-- Column -->
         </div>
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $("#business_id").on("change", function(event) {
 
+                    $('#business_roles').html('<option value=""><?php echo $this->lang->line('select_role') ?></option>');
+                    var business_id = $('#business_id').val();
+
+                    if (business_id !== "") {
+                        $.ajax({
+                            url: "getRoleByBusinessId",
+                            type: "POST",
+                            data: {business_id: business_id},
+                            dataType: 'json',
+                            success: function(response) {
+                                $('#business_roles').append(response.data);
+                            }
+                        });
+                    }
+
+                });
+            });
+        </script>
         <?php $this->load->view('backend/footer'); ?>

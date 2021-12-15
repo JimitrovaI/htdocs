@@ -22,22 +22,24 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-body">
-                            <h4 class="card-title"><?php echo $this->lang->line('transaction_payment') ?>: (<?php echo $this->lang->line('total_price') ?>: <?php echo $business_transaction['total_price'] ?>)</h4>
-                            <form class="row">
+                            <h4 class="card-title"><?php echo $this->lang->line('transaction_payment') ?>: (<?php echo $this->lang->line('total_price') ?>: <?php echo $business_transaction['total_price'] ?>, <?php echo $this->lang->line('balance') ?>: <?php echo $balance ?>)</h4>
+                            <form class="row" action="savePayment" method="post" enctype="multipart/form-data">
                                 <div class="form-group col-md-4">
-                                    <label><?php echo $this->lang->line('pay_date') ?></label>
-                                    <input type="text" name="date_from" id="pay_date" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('pay_date') ?>">
+                                    <label><?php echo $this->lang->line('paid_date') ?></label>
+                                    <input type="text" name="date_from" id="paid_date" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('paid_date') ?>">
                                 </div>
                                 <div class="form-group col-md-4">
-                                    <label><?php echo $this->lang->line('pay_type') ?></label>
-                                    <input type="text" name="paytype" id="paytype" class="form-control" placeholder="<?php echo $this->lang->line('pay_type') ?>">
+                                    <label><?php echo $this->lang->line('paid_amount') ?></label>
+                                    <input type="text" name="paid_amount" id="paid_amount" class="form-control" placeholder="<?php echo $this->lang->line('paid_amount') ?>" required>
                                 </div>
                                 <div class="form-group col-md-4">
                                     <label><?php echo $this->lang->line('invoice') ?></label>
-                                    <input type="file" name="invoice" id="paytype" class="form-control" placeholder="<?php echo $this->lang->line('invoice') ?>">
+                                    <input type="file" name="invoice" id="paytype" class="form-control" placeholder="<?php echo $this->lang->line('invoice') ?>" required>
                                 </div>
                                 <div class="col-md-12 form-group">
-                                    <input type="submit" class="btn btn-success" value="<?php echo $this->lang->line('submit') ?>" id="searchtransactionbtn">
+                                    <input type="hidden" name="added_amount" value="<?php echo $balance ?>">
+                                    <input type="hidden" name="business_id" value="<?php echo $business_transaction['business_id'] ?>" required>
+                                    <input type="submit" class="btn btn-success" value="<?php echo $this->lang->line('submit') ?>" id="add_payment">
                                 </div>
                             </form>
                         </div>
@@ -68,10 +70,9 @@
                                     <tr>
                                         <th><?php echo $this->lang->line('name') ?></th>
                                         <th><?php echo $this->lang->line('date') ?></th>
-                                        <th><?php echo $this->lang->line('bill') ?></th>
                                         <th><?php echo $this->lang->line('details') ?></th>
                                         <th><?php echo $this->lang->line('total_price') ?></th>
-                                        <th><?php echo $this->lang->line('sell_by') ?></th>
+                                        <th><?php echo $this->lang->line('sold_by') ?></th>
                                         <th><?php echo $this->lang->line('status') ?></th>
                                     </tr>
                                 </thead>
@@ -81,7 +82,6 @@
                                         <tr>
                                             <th><?php echo $transaction['em_name'] ?></th>
                                             <th><?php echo date('Y-m-d', strtotime($transaction['buy_date'])); ?></th>
-                                            <th><?php echo $transaction['bill'] ?></th>
                                             <th><?php echo $transaction['details'] ?></th>
                                             <th><?php echo $transaction['cost'] ?></th>
                                             <th><?php echo $transaction['buy_staff'] ?></th>
@@ -103,7 +103,7 @@
             $.fn.dataTable.ext.search.push(
                 function(settings, data, dataIndex) {
                     var filter_type = $('#filter_type').val();
-                    var status = data[6]
+                    var status = data[5]
 
                     if (filter_type != 'all' && filter_type != status) {
                         return false;

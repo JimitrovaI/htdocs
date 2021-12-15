@@ -4,24 +4,15 @@
     <div class="message"></div>
     <div class="row page-titles">
         <div class="col-md-5 align-self-center">
-            <h3 class="text-themecolor"><i class="fa fa-hard-of-hearing" style="color:#1976d2"></i><?php echo $this->lang->line('transactions') ?></h3>
+            <h3 class="text-themecolor"><i class="fa fa-hard-of-hearing" style="color:#1976d2"></i><?php echo $this->lang->line('payment_history') ?></h3>
         </div>
         <div class="col-md-7 align-self-center">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item"><a href="javascript:void(0)"><?php echo $this->lang->line('home') ?></a></li>
-                <li class="breadcrumb-item active"><?php echo $this->lang->line('transactions') ?></li>
+                <li class="breadcrumb-item active"><?php echo $this->lang->line('payment_history') ?></li>
             </ol>
         </div>
     </div>
-
-    <?php if (!empty($this->session->flashdata('delsuccess'))) { ?>
-        <div class="alert alert-warning alert-dismissible fade show" role="alert">
-            <strong><?php echo $this->session->flashdata('delsuccess'); ?></strong>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    <?php } ?>
     <!-- Container fluid  -->
     <!-- ============================================================== -->
     <div class="container-fluid">
@@ -29,10 +20,7 @@
         <div class="row m-b-10">
             <div class="col-12">
                 <input type="hidden" id="filter_type" value="all">
-                <button type="button" class="btn btn-info"><i class="fa fa-plus"></i><a href="<?php echo base_url(); ?>transaction/addTransaction" class="text-white"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('generate_transaction') ?> </a></button>
-                <button type="button" class="btn btn-primary filter_table" data-type="all" style="display:none;"><i class="fa fa-bars"></i> <?php echo $this->lang->line('all_transactions') ?></button>
-                <button type="button" class="btn btn-primary filter_table" data-type="<?php echo $this->lang->line('pending') ?>"><i class="fa fa-bars"></i> <?php echo $this->lang->line('pending_transactions') ?></button>
-                <button type="button" class="btn btn-primary filter_table" data-type="<?php echo $this->lang->line('completed') ?>"><i class="fa fa-bars"></i> <?php echo $this->lang->line('completed_transactions') ?> </button>
+                <button type="button" class="btn btn-info"><i class="fa fa-plus"></i><a href="<?php echo base_url(); ?>transaction/business_transaction" class="text-white"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('generate_payment') ?> </a></button>
             </div>
         </div>
 
@@ -40,7 +28,7 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-body">
-                        <h4 class="card-title"><?php echo $this->lang->line('search_transaction') ?></h4>
+                        <h4 class="card-title"><?php echo $this->lang->line('search') ?></h4>
                         <div class="form-material row">
                             <div class="form-group col-md-3">
                                 <input type="text" name="date_from" id="date_from" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('from') ?>">
@@ -69,7 +57,7 @@
             <div class="col-12">
                 <div class="card card-outline-info">
                     <div class="card-header">
-                        <h4 class="m-b-0 text-white"> <?php echo $this->lang->line('transaction_list') ?> </h4>
+                        <h4 class="m-b-0 text-white"> <?php echo $this->lang->line('payment_list') ?> </h4>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive ">
@@ -78,11 +66,10 @@
                                     <tr>
                                         <th><?php echo $this->lang->line('id') ?></th>
                                         <th><?php echo $this->lang->line('business') ?></th>
-                                        <th><?php echo $this->lang->line('name') ?></th>
-                                        <th><?php echo $this->lang->line('date') ?></th>
-                                        <th><?php echo $this->lang->line('total_price') ?></th>
-                                        <th><?php echo $this->lang->line('sold_by') ?></th>
-                                        <th><?php echo $this->lang->line('status') ?></th>
+                                        <th><?php echo $this->lang->line('paid_date') ?></th>
+                                        <th><?php echo $this->lang->line('paid_amount') ?></th>
+                                        <th><?php echo $this->lang->line('add') ?></th>
+                                        <th><?php echo $this->lang->line('balance') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
@@ -90,29 +77,25 @@
                                     <tr>
                                         <th><?php echo $this->lang->line('id') ?></th>
                                         <th><?php echo $this->lang->line('business') ?></th>
-                                        <th><?php echo $this->lang->line('name') ?></th>
-                                        <th><?php echo $this->lang->line('date') ?></th>
-                                        <th><?php echo $this->lang->line('total_price') ?></th>
-                                        <th><?php echo $this->lang->line('sold_by') ?></th>
-                                        <th><?php echo $this->lang->line('status') ?></th>
+                                        <th><?php echo $this->lang->line('paid_date') ?></th>
+                                        <th><?php echo $this->lang->line('paid_amount') ?></th>
+                                        <th><?php echo $this->lang->line('add') ?></th>
+                                        <th><?php echo $this->lang->line('balance') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </tfoot>
                                 <tbody>
-                                    <?php foreach ($transactions as $transaction) : ?>
+                                    <?php foreach ($payments as $payment) : ?>
                                         <tr>
-                                            <th><?php echo $transaction['id'] ?></th>
-                                            <th><?php echo $transaction['business'] ?></th>
-                                            <th><?php echo $transaction['em_name'] ?></th>
-                                            <th><?php echo date('Y-m-d', strtotime($transaction['buy_date'])); ?></th>
-                                            <th><?php echo $transaction['cost'] ?></th>
-                                            <th><?php echo $transaction['buy_staff'] ?></th>
-                                            <th>
-                                                <?php echo $transaction['status'] == "COMPLETE" ? "<span class='badge badge-success'>" . $this->lang->line('completed') . "</span>" : "<span class='badge badge-info'>" . $this->lang->line('pending') . "</span>" ?>
-                                            </th>
+                                            <th><?php echo $payment['id'] ?></th>
+                                            <th><?php echo $payment['business'] ?></th>
+                                            <th><?php echo date('Y-m-d', strtotime($payment['paid_date'])); ?></th>
+                                            <th><?php echo $payment['paid_amount'] ?></th>
+                                            <th><?php echo $payment['added_amount'] ?></th>
+                                            <th><?php echo $payment['balance'] ?></th>
                                             <td class="jsgrid-align-center ">
-                                                <a href="<?php echo base_url(); ?>transaction/transaction_view?id=<?php echo base64_encode($transaction['id']) ?>" title="Edit" class="btn btn-sm btn-info waves-effect waves-light disiplinary" data-id="<?php echo $transaction['id']; ?>"><i class="fa fa-pencil-square-o"></i></a>
-                                                <a onclick="return confirm('<?php echo $this->lang->line('are_you_sure_to_delete_this'); ?>\n<?php echo $this->lang->line('cannot_be_undone'); ?>')" href="<?php echo base_url(); ?>transaction/deleteTransaction?id=<?php echo base64_encode($transaction['id']) ?>" title="Delete" class="btn btn-sm btn-info waves-effect waves-light"><i class="fa fa-trash-o"></i></a>
+                                                <a href="<?php echo base_url(); ?>transaction/payment_detail_view?id=<?php echo base64_encode($payment['id']) ?>" title="Edit" class="btn btn-sm btn-info waves-effect waves-light disiplinary" data-id="<?php echo $payment['id']; ?>"><i class="fa fa-pencil-square-o"></i></a>
+                                                <a href="<?php echo base_url(); ?>transaction/payment_detail_view?id=<?php echo base64_encode($payment['id']) ?>" title="View" class="btn btn-sm btn-info waves-effect waves-light"><i class="fa fa-bars"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -128,13 +111,12 @@
         <script>
             $.fn.dataTable.ext.search.push(
                 function(settings, data, dataIndex) {
-                    var filter_type = $('#filter_type').val();
                     var date_from = $('#date_from').val();
                     var date_to = $('#date_to').val();
                     var where = $('#business_id').val();
                     var business = data[1];
                     var date = Date.parse(data[3]);
-                    var status = data[6]
+                   
 
                     var from = Date.parse(date_from);
                     var to = Date.parse(date_to);
@@ -151,9 +133,6 @@
                         return false;
                     }
 
-                    if (filter_type != 'all' && filter_type != status) {
-                        return false;
-                    }
 
                     return true;
                 }
@@ -165,14 +144,6 @@
                     buttons: [
                         'copy', 'csv', 'excel', 'pdf', 'print'
                     ]
-                });
-
-                // Event listener to the two range filtering inputs to redraw on input
-                $('.filter_table').click(function() {
-                    $('#filter_type').val($(this).attr('data-type'))
-                    $('.filter_table').css('display', 'inline-block');
-                    $(this).css('display', 'none');
-                    table.draw()
                 });
 
                 $('#searchtransactionbtn').click(function() {

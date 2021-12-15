@@ -33,6 +33,7 @@
         <div class="row m-b-10">
             <div class="col-12">
                 <button type="button" id="add_business_employee_btn" class="btn btn-info"><i class="fa fa-plus"></i><a href="<?php echo base_url(); ?>business/add_employee" class="text-white"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('add_employee') ?></a></button>
+                <button type="button" class="btn btn-primary"><i class="fa fa-bars"></i><a href="#" class="text-white" data-toggle="modal" data-target="#Bulkmodal"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('add_bulk_employee') ?></a></button>
             </div>
         </div>
         <div class="row">
@@ -69,11 +70,11 @@
                                 <thead>
                                     <tr>
                                         <th><?php echo $this->lang->line('business') ?></th>
-                                        <th><?php echo $this->lang->line('employee_name') ?></th>
+                                        <th><?php echo $this->lang->line('name') ?></th>
                                         <th><?php echo $this->lang->line('PIN') ?></th>
                                         <th><?php echo $this->lang->line('email') ?></th>
                                         <th><?php echo $this->lang->line('phone') ?></th>
-                                        <th><?php echo $this->lang->line('employee_type') ?></th>
+                                        <th><?php echo $this->lang->line('role') ?></th>
                                         <th><?php echo $this->lang->line('credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
@@ -85,7 +86,7 @@
                                         <th><?php echo $this->lang->line('PIN') ?></th>
                                         <th><?php echo $this->lang->line('email') ?></th>
                                         <th><?php echo $this->lang->line('phone') ?></th>
-                                        <th><?php echo $this->lang->line('employee_type') ?></th>
+                                        <th><?php echo $this->lang->line('role') ?></th>
                                         <th><?php echo $this->lang->line('credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
@@ -98,6 +99,44 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <div id="Bulkmodal" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="import" enctype="multipart/form-data">
+                        <div class="modal-header">
+                            <h4 class="modal-title" id="myModalLabel"><?php echo $this->lang->line('add_employee') ?></h4>
+                            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <h4 class="text-right"><a href="<?php echo base_url(); ?>assets/images/samplefiles/importbusinessemployeesampledata.csv" download><?php echo $this->lang->line('download_sample_csv_file') ?> <i class="fa fa-download"></i></a></h4>
+
+                            <div class="form-group m-t-20">
+                                <label><?php echo $this->lang->line('business') ?></label>
+                                <select name="business_id" value="" class="form-control custom-select" required>
+                                    <option value=""><?php echo $this->lang->line('select_business') ?> </option>
+                                    <?Php foreach ($businesses as $business) : ?>
+                                        <option value="<?php echo $business->id ?>"><?php echo $business->name ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label><?php echo $this->lang->line('import_excel') ?> </label>
+                                <input type="file" name="csv_file" class="form-control" id="csv_file" accept=".csv" required>
+                            </div>
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-info waves-effect">Save</button>
+                            <button type="button" class="btn btn-info waves-effect" data-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
         </div>
         <script>
             $(document).ready(function() {

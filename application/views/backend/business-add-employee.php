@@ -40,7 +40,7 @@
                             </div>
                             <div class="form-group col-md-3 m-t-20">
                                 <label><?php echo $this->lang->line('business') ?></label>
-                                <select name="business_id" value="" class="form-control custom-select" required>
+                                <select name="business_id" id="business_id" class="form-control" value="" class="form-control custom-select" required>
                                     <option value=""><?php echo $this->lang->line('select_business') ?> </option>
                                     <?Php foreach ($businesses as $business) : ?>
                                         <option <?php if ($business_id == $business->id) echo 'Selected' ?> value="<?php echo $business->id ?>"><?php echo $business->name ?></option>
@@ -49,9 +49,8 @@
                             </div>
                             <div class="form-group col-md-3 m-t-20">
                                 <label><?php echo $this->lang->line('role') ?> </label>
-                                <select name="em_role" class="form-control custom-select" required>
-                                    <option value="EMPLOYEE">Employee</option>
-                                    <option value="MANAGER">Manager</option>
+                                <select name="em_role_id" id="business_roles" class="form-control custom-select">
+                                    <option value=""><?php echo $this->lang->line('select_role') ?></option>
                                 </select>
                             </div>
                             <div class="form-group col-md-3 m-t-20">
@@ -110,3 +109,26 @@
             </div>
         </div>
         <?php $this->load->view('backend/footer'); ?>
+
+        <script type="text/javascript">
+            $(document).ready(function() {
+                $("#business_id").on("change", function(event) {
+
+                    $('#business_roles').html('<option value=""><?php echo $this->lang->line('select_role') ?></option>');
+                    var business_id = $('#business_id').val();
+
+                    if (business_id !== "") {
+                        $.ajax({
+                            url: "getRoleByBusinessId",
+                            type: "POST",
+                            data: {business_id: business_id},
+                            dataType: 'json',
+                            success: function(response) {
+                                $('#business_roles').append(response.data);
+                            }
+                        });
+                    }
+
+                });
+            });
+        </script>

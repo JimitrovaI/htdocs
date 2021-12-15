@@ -584,6 +584,10 @@ html body .bg-white {
     background-color: #ffffff
 }
 
+label.error{
+    color:brown
+}
+
 .round {
     line-height: 48px;
     color: #ffffff;
@@ -10226,3 +10230,4 @@ color: #67757c!important
     max-height: 39px;
     padding: 0px 15px 0 0;
 }
+

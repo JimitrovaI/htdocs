@@ -52,6 +52,7 @@
             } else {
                 $tabledata = '';
                 foreach ($employees as $employee) {
+                    $credit = empty($employee->em_credit) ? (empty($employee->role_credit)? $employee->default_credit : $employee->role_credit) : $employee->em_credit;
                     $tabledata .= "<tr>
                         <td class='td_business_$employee->id'>$employee->business</td>
                         <td class='td_pin_$employee->id'>$employee->em_code</td>
@@ -59,11 +60,15 @@
                         <td class='td_email_$employee->id'>$employee->em_email</td>
                         <td class='td_phone_$employee->id'>$employee->em_phone</td>
                         <td class='td_jobtitle_$employee->id'>$employee->em_job_title</td>
-                        <td class='td_credit_$employee->id'>$employee->em_credit</td>
-                        <td class='jsgrid-align-center'>
-                            <a href='javascript:;' onclick='creditshop($employee->id)' title='" . $this->lang->line('credit_shop') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-cart-plus'></i></a>
-                        </td>
-                    </tr>";
+                        <td class='td_credit_$employee->id'>$credit</td>
+                        <td class='td_pending_credit_$employee->id'>$employee->pending_credit</td>
+                        <td class='jsgrid-align-center'>";
+                        if($credit-$employee->pending_credit > 0){
+                            $tabledata .= "<a href='javascript:;' onclick='creditshop($employee->id)' title='" . $this->lang->line('credit_shop') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-cart-plus'></i></a>";
+                        }else{
+                            $tabledata .= "<button disabled class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-shopping-cart'></i></button>";
+                        }
+                        $tabledata .= "</td> </tr>";
                 }
                 $result = array('success' => true, 'data' => $tabledata);
                 echo json_encode($result);
