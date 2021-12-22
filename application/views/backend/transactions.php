@@ -28,11 +28,10 @@
 
         <div class="row m-b-10">
             <div class="col-12">
-                <input type="hidden" id="filter_type" value="all">
-                <button type="button" class="btn btn-info"><i class="fa fa-plus"></i><a href="<?php echo base_url(); ?>transaction/addTransaction" class="text-white"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('generate_transaction') ?> </a></button>
-                <button type="button" class="btn btn-primary filter_table" data-type="all" style="display:none;"><i class="fa fa-bars"></i> <?php echo $this->lang->line('all_transactions') ?></button>
-                <button type="button" class="btn btn-primary filter_table" data-type="<?php echo $this->lang->line('pending') ?>"><i class="fa fa-bars"></i> <?php echo $this->lang->line('pending_transactions') ?></button>
-                <button type="button" class="btn btn-primary filter_table" data-type="<?php echo $this->lang->line('completed') ?>"><i class="fa fa-bars"></i> <?php echo $this->lang->line('completed_transactions') ?> </button>
+                <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                    <button type="button" class="btn btn-info"><i class="fa fa-plus"></i><a href="<?php echo base_url(); ?>transaction/addTransaction" class="text-white"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('generate_transaction') ?> </a></button>
+                <?php } ?>
+
             </div>
         </div>
 
@@ -43,19 +42,31 @@
                         <h4 class="card-title"><?php echo $this->lang->line('search_transaction') ?></h4>
                         <div class="form-material row">
                             <div class="form-group col-md-3">
-                                <input type="text" name="date_from" id="date_from" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('from') ?>">
+                                <input type="text" name="date_from" id="date_from" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('from') ?>" value="<?php echo $from ?>">
                             </div>
                             <div class="form-group col-md-3">
-                                <input type="text" name="date_to" id="date_to" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('to') ?>">
+                                <input type="text" name="date_to" id="date_to" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('to') ?>" value="<?php echo $to ?>">
                             </div>
+                            <?php if ($by_business || $by_employee) {
+                            } else { ?>
+                                <div class="form-group col-md-3">
+                                    <select class="form-control custom-select" tabindex="1" name="business_id" id="business_id">
+                                        <option value=""><?php echo $this->lang->line('business') ?></option>
+                                        <?php foreach ($businesses as $business) { ?>
+                                            <option <?php echo $business_id == $business->id ? 'selected' : "" ?> value="<?php echo $business->name ?>"><?php echo $business->name ?></option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                            <?php } ?>
                             <div class="form-group col-md-3">
-                                <select class="form-control custom-select" tabindex="1" name="business_id" id="business_id">
-                                    <option value=""><?php echo $this->lang->line('business') ?></option>
-                                    <?php foreach ($businesses as $business) { ?>
-                                        <option value="<?php echo $business->name ?>"><?php echo $business->name ?></option>
-                                    <?php } ?>
+                                <select class="form-control custom-select" tabindex="1" name="transaction_status" id="transaction_status">
+                                    <option value=""><?php echo $this->lang->line('status') ?></option>
+                                    <option value="COMPLETE" <?php echo $status=='COMPLETE'?'selected': "" ?>> <?php echo $this->lang->line('completed') ?></option>
+                                    <option value="PENDING"  <?php echo $status=='PENDING'?'selected': "" ?>> <?php echo $this->lang->line('pending') ?></option>
+                                    <option value="OVERDUE"  <?php echo $status=='OVERDUE'?'selected': "" ?>> <?php echo $this->lang->line('overdue') ?></option>
                                 </select>
                             </div>
+
                             <div class="col-md-3 form-group">
                                 <input type="button" class="btn btn-success" value="<?php echo $this->lang->line('search') ?>" id="searchtransactionbtn">
                             </div>
@@ -110,9 +121,18 @@
                                             <th>
                                                 <?php echo $transaction['status'] == "COMPLETE" ? "<span class='badge badge-success'>" . $this->lang->line('completed') . "</span>" : "<span class='badge badge-info'>" . $this->lang->line('pending') . "</span>" ?>
                                             </th>
-                                            <td class="jsgrid-align-center ">
-                                                <a href="<?php echo base_url(); ?>transaction/transaction_view?id=<?php echo base64_encode($transaction['id']) ?>" title="Edit" class="btn btn-sm btn-info waves-effect waves-light disiplinary" data-id="<?php echo $transaction['id']; ?>"><i class="fa fa-pencil-square-o"></i></a>
-                                                <a onclick="return confirm('<?php echo $this->lang->line('are_you_sure_to_delete_this'); ?>\n<?php echo $this->lang->line('cannot_be_undone'); ?>')" href="<?php echo base_url(); ?>transaction/deleteTransaction?id=<?php echo base64_encode($transaction['id']) ?>" title="Delete" class="btn btn-sm btn-info waves-effect waves-light"><i class="fa fa-trash-o"></i></a>
+                                            <td class="text-center ">
+                                                <a href="<?php echo base_url(); ?>transaction/transaction_view?id=<?php echo base64_encode($transaction['id']) ?>" title="Edit" class="btn btn-sm btn-info waves-effect waves-light disiplinary" data-id="<?php echo $transaction['id']; ?>">
+                                                    <?php if ($this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
+                                                        <i class="fa fa-pencil-square-o"></i>
+                                                    <?php } else { ?>
+                                                        <i class="fa fa-bars"></i>
+                                                    <?php } ?>
+                                                </a>
+                                                <?php if ($this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
+                                                    <a onclick="return confirm('<?php echo $this->lang->line('are_you_sure_to_delete_this'); ?>\n<?php echo $this->lang->line('cannot_be_undone'); ?>')" href="<?php echo base_url(); ?>transaction/deleteTransaction?id=<?php echo base64_encode($transaction['id']) ?>" title="Delete" class="btn btn-sm btn-info waves-effect waves-light"><i class="fa fa-trash-o"></i></a>
+                                                <?php } ?>
+
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -126,39 +146,6 @@
 
         <?php $this->load->view('backend/footer'); ?>
         <script>
-            $.fn.dataTable.ext.search.push(
-                function(settings, data, dataIndex) {
-                    var filter_type = $('#filter_type').val();
-                    var date_from = $('#date_from').val();
-                    var date_to = $('#date_to').val();
-                    var where = $('#business_id').val();
-                    var business = data[1];
-                    var date = Date.parse(data[3]);
-                    var status = data[6]
-
-                    var from = Date.parse(date_from);
-                    var to = Date.parse(date_to);
-
-                    if (date_from && date < from) {
-                        return false;
-                    }
-
-                    if (date_to && date > to) {
-                        return false;
-                    }
-
-                    if (where && business != where) {
-                        return false;
-                    }
-
-                    if (filter_type != 'all' && filter_type != status) {
-                        return false;
-                    }
-
-                    return true;
-                }
-            );
-
             $(document).ready(function() {
                 var table = $('#alltransactionstb').DataTable({
                     dom: 'Bfrtip',
@@ -167,16 +154,29 @@
                     ]
                 });
 
-                // Event listener to the two range filtering inputs to redraw on input
-                $('.filter_table').click(function() {
-                    $('#filter_type').val($(this).attr('data-type'))
-                    $('.filter_table').css('display', 'inline-block');
-                    $(this).css('display', 'none');
-                    table.draw()
-                });
 
                 $('#searchtransactionbtn').click(function() {
-                    table.draw()
+                    var geturl = "<?php echo base_url(); ?>transaction/transactions?";
+                    var from = $('#date_from').val();
+                    var to = $('#date_to').val();
+                    <?php if (!$by_employee && !$by_business) { ?>
+                        var business_id = $('#business_id').val();
+                    <?php } ?>
+                    var status = $('#transaction_status').val();
+                    <?php if ($by_employee) { ?>
+                        geturl += "emp_id=<?php echo $emp_id ?>";
+                        geturl += "&from=" + from;
+
+                    <?php } else {  ?>
+                        geturl += "&from=" + from;
+                    <?php }  ?>
+                    geturl += "&to=" + to;
+                    <?php if (!$by_employee && !$by_business) { ?>
+                        geturl += "&business_id=" + business_id;
+                    <?php } ?>
+                    geturl += "&status=" + status;
+
+                    window.location.href = geturl;
                 })
             });
         </script>

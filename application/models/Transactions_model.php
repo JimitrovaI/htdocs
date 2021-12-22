@@ -82,23 +82,23 @@ class Transactions_model extends CI_Model
     $this->db->join('employee as buy_employee', 'business_transactions.buy_staff_id = buy_employee.id');
     $this->db->join('employee as pay_employee', 'business_transactions.pay_staff_id = pay_employee.id', "left");
 
-    foreach($array as $key => $value) {
-      if($key == 'from'){
-        $this->db->where("business_transactions.buy_date >= $value");
+    foreach ($array as $key => $value) {
+      if ($key == 'from') {
+        $this->db->where('DATE(business_transactions.buy_date) >= "' . $value . '"');
       }
-      if($key == 'to'){
-        $this->db->where("business_transactions.buy_date <= $value");
+      if ($key == 'to') {
+        $this->db->where('DATE(business_transactions.buy_date) <= "' . $value . '"');
       }
-      if($key == 'business_id'){
+      if ($key == 'business_id') {
         $this->db->where("business.id", $value);
       }
-      if($key == 'emp_id'){
+      if ($key == 'emp_id') {
         $this->db->where("business_transactions.emp_id", $value);
       }
-      if($key == 'status'){
+      if ($key == 'status') {
         $this->db->where("business_transactions.status", $value);
       }
-      if($key == 'payment_id'){
+      if ($key == 'payment_id') {
         $this->db->where("business_transactions.payment_id", $value);
       }
     }
@@ -106,14 +106,25 @@ class Transactions_model extends CI_Model
     return $this->db->get()->result_array();
   }
 
-  public function bulk_updateTransactions($ids, $data){
-    if(!empty($ids)){
+  public function bulk_updateTransactions($ids, $data)
+  {
+    if (!empty($ids)) {
       $this->db->where_in('id', $ids);
       $this->db->update('business_transactions', $data);
     }
   }
 
-  public function getBusinessPayments($id = null){
+  public function overdueBusinessTransactions($business_id, $paydate)
+  {
+    $this->db->set('business_transactions.status', 'OVERDUE');
+    $this->db->where('business_transactions.status', 'PENDING');
+    $this->db->where('DATE(business_transactions.buy_date) < "' . $paydate . '"');
+    $this->db->where('business_employees.business_id', $business_id);
+    $this->db->update('business_transactions JOIN business_employees ON business_transactions.emp_id= business_employees.id');
+  }
+
+  public function getBusinessPayments($id = null)
+  {
     $this->db->select('business_payments.*, business.name as business')->from('business_payments');
     $this->db->join('business', 'business_payments.business_id = business.id');
     if ($id != null) {
@@ -128,7 +139,19 @@ class Transactions_model extends CI_Model
     }
   }
 
-  public function getLastPayment($business_id){
+  public function getBusinessPaymentsByBusiness($id = null)
+  {
+    $this->db->select('business_payments.*, business.name as business')->from('business_payments');
+    $this->db->join('business', 'business_payments.business_id = business.id');
+    if ($id != null) {
+      $this->db->where('business_payments.business_id', $id);
+    }
+
+    return $this->db->get()->result_array();
+  }
+
+  public function getLastPayment($business_id)
+  {
     $this->db->select('business_payments.*')->from('business_payments');
     $this->db->where('business_payments.business_id', $business_id);
     $this->db->order_by('business_payments.id', 'desc');
@@ -162,5 +185,4 @@ class Transactions_model extends CI_Model
       return $insert_id;
     }
   }
-
 }

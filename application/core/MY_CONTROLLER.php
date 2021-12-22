@@ -9,7 +9,9 @@ class MY_Controller extends CI_Controller
     {
 
         parent::__construct();
-        $this->load->helper('language');
+		$this->load->library('mailer');
+		$this->load->model('business_model');
+		$this->load->model('transactions_model');
 
         if ($this->session->has_userdata('language')) {
             $language = $this->session->userdata('language');
@@ -23,4 +25,5 @@ class MY_Controller extends CI_Controller
 
         $this->load->language($lang_array, $language);
     }
+
 }

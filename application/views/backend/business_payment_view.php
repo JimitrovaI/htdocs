@@ -46,37 +46,40 @@
                             <div class="form-group col-md-4">
                                 <label><?php echo $this->lang->line('invoice') ?> </label>
                                 <img src="<?php echo base_url(); ?>assets/images/invoices/<?php echo $business_payment['invoice']; ?>" class="bill_preview" width="100%" />
-                                <input type="file" name="invoice" class="form-control" value="">
+                                <?php if ($this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN") { ?>
+                                    <input type="file" name="invoice" class="form-control" value="">
+                                <?php } ?>
                             </div>
 
                             <div class="row col-md-8 align-self-start">
                                 <div class="form-group col-md-6">
                                     <label><?php echo $this->lang->line('paid_date') ?></label>
-                                    <input type="text" name="paid_date" id="paid_date" value="<?php echo date('Y-m-d', strtotime($business_payment['paid_date'])); ?>" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('paid_date') ?>">
+                                    <input type="text" name="paid_date" id="paid_date" value="<?php echo date('Y-m-d', strtotime($business_payment['paid_date'])); ?>" class="form-control <?php echo $this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN"?'mydatetimepickerFull':''?>" placeholder="<?php echo $this->lang->line('paid_date') ?>" <?php echo $this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN"?'':'readonly'?>>
                                 </div>
 
                                 <div class="form-group col-md-6">
                                     <label><?php echo $this->lang->line('add') ?></label>
-                                    <input type="text" name="added_amount" id="added_amount" value="<?php echo $business_payment['added_amount']; ?>" class="form-control" placeholder="<?php echo $this->lang->line('paid_date') ?>">
+                                    <input type="text" name="added_amount" id="added_amount" value="<?php echo $business_payment['added_amount']; ?>" class="form-control" placeholder="<?php echo $this->lang->line('paid_date') ?>" <?php echo $this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN"?'':'readonly'?>>
                                 </div>
 
                                 <div class="form-group col-md-6">
                                     <label><?php echo $this->lang->line('paid_amount') ?></label>
-                                    <input type="text" name="paid_amount" id="paid_amount" value="<?php echo $business_payment['paid_amount']; ?>" class="form-control" placeholder="<?php echo $this->lang->line('paid_amount') ?>" required>
+                                    <input type="text" name="paid_amount" id="paid_amount" value="<?php echo $business_payment['paid_amount']; ?>" class="form-control" placeholder="<?php echo $this->lang->line('paid_amount') ?>" required <?php echo $this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN"?'':'readonly'?>>
                                 </div>
 
                                 <div class="form-group col-md-6">
                                     <label><?php echo $this->lang->line('balance') ?></label>
-                                    <input type="text" name="balance" id="balance" value="<?php echo $business_payment['balance']; ?>" class="form-control" placeholder="<?php echo $this->lang->line('balance') ?>">
+                                    <input type="text" name="balance" id="balance" value="<?php echo $business_payment['balance']; ?>" class="form-control" placeholder="<?php echo $this->lang->line('balance') ?>" <?php echo $this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN"?'':'readonly'?>>
                                 </div>
                             </div>
 
-
-                            <div class="col-md-12 form-group">
-                                <input type="hidden" name="id" value="<?php echo $business_payment['id'] ?>" required>
-                                <input type="hidden" name="business_id" value="<?php echo $business_payment['business_id'] ?>" required>
-                                <input type="submit" class="btn btn-success" value="<?php echo $this->lang->line('submit') ?>" id="add_payment">
-                            </div>
+                            <?php if ($this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN") { ?>
+                                <div class="col-md-12 form-group">
+                                    <input type="hidden" name="id" value="<?php echo $business_payment['id'] ?>" required>
+                                    <input type="hidden" name="business_id" value="<?php echo $business_payment['business_id'] ?>" required>
+                                    <input type="submit" class="btn btn-success" value="<?php echo $this->lang->line('submit') ?>" id="add_payment">
+                                </div>
+                            <?php } ?>
                         </form>
                     </div>
                 </div>

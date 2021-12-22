@@ -16,8 +16,6 @@
             $this->load->model('notice_model');
             $this->load->model('project_model');
             $this->load->model('leave_model');
-            $this->load->model('business_model');
-            $this->load->model('transactions_model');
         }
 
         public function index()
@@ -31,7 +29,54 @@
         function transactions()
         {
             if ($this->session->userdata('user_login_access') != False) {
-                $transactions = $this->transactions_model->get();
+
+                $emp_id = base64_decode($this->input->get('emp_id'));
+                $business_id = base64_decode($this->input->get('business_id'));
+                $status = $this->input->get('status');
+                $from = $this->input->get('from');
+                $to = $this->input->get('to');
+
+                $data['by_business'] = false;
+                $data['by_employee'] = false;
+
+                $searchdata = array();
+                if (!empty($status)) {
+                    $searchdata['status'] = $status;
+                }
+
+                if (!empty($from)) {
+                    $searchdata['from'] = $from;
+                }
+
+                if (!empty($to)) {
+                    $searchdata['to'] = $to;
+                }
+
+                if (isset($emp_id) && !empty($emp_id)) {
+                    $data['by_employee'] = true;
+                    $data['emp_id'] = $emp_id;
+                    $searchdata['emp_id'] = $emp_id;
+                    $transactions = $this->transactions_model->searchTansactions($searchdata);
+                } else {
+
+                    if (!$data['by_employee'] && $this->session->userdata('user_business') != 'pharmacy') {
+                        $data['by_business'] = true;
+                        $business_id = $this->session->userdata('user_business');
+                    }
+
+                    if (!empty($business_id)) {
+                        $searchdata['business_id'] = $business_id;
+                    }
+
+                    $transactions = $this->transactions_model->searchTansactions($searchdata);
+                }
+                $data['emp_id'] = $emp_id;
+                $data['business_id'] = $business_id;
+                $data['status'] = $status;
+                $data['from'] = $from;
+                $data['to'] = $to;
+
+
                 $data['transactions'] = $transactions;
                 $data['businesses'] = $this->business_model->getAll();
                 $this->load->view('backend/transactions', $data);
@@ -48,7 +93,9 @@
                 $staffs = $this->employee_model->GetAllEmployee();
                 $data['transaction'] = $transaction;
                 $data['staffs'] = $staffs;
-                $data['basic'] = $this->business_model->GetEmployeeById($transaction['em_id']);
+                $data['basic'] = $this->business_model->GetEmployeeById($transaction['emp_id']);
+                $data['pharmacist'] = $this->employee_model->get_by_id($transaction['buy_staff_id']);
+                $data['socialmedia'] = $this->employee_model->GetSocialValue($data['pharmacist']->em_id);
                 $this->load->view('backend/transaction_view', $data);
             } else {
                 redirect(base_url(), 'refresh');
@@ -57,7 +104,7 @@
 
         function addTransaction()
         {
-            if ($this->session->userdata('user_login_access') != False) {
+            if ($this->session->userdata('user_login_access') != False && $this->session->userdata('user_business') == 'pharmacy') {
                 $staffs = $this->employee_model->GetAllEmployee();
                 $data['staffs'] = $staffs;
                 $data['businesses'] = $this->business_model->getAll();
@@ -66,7 +113,7 @@
                 redirect(base_url(), 'refresh');
             }
         }
-        
+
         function deleteTransaction()
         {
             if ($this->session->userdata('user_login_access') != False) {
@@ -81,7 +128,7 @@
 
         function business_transaction()
         {
-            if ($this->session->userdata('user_login_access') != False) {
+            if ($this->session->userdata('user_login_access') != False && $this->session->userdata('user_business') == 'pharmacy') {
                 $business_transactions = $this->transactions_model->getBusinessTransactions();
                 $data['business_transactions'] = $business_transactions;
                 $this->load->view('backend/business_transaction', $data);
@@ -94,6 +141,9 @@
         {
             if ($this->session->userdata('user_login_access') != False) {
                 $id = base64_decode($this->input->get('id'));
+                if ($this->session->userdata('user_business') != 'pharmacy' && $id != $this->session->userdata('user_business')) {
+                    redirect(base_url(), 'refresh');
+                }
                 $business_transaction = $this->transactions_model->getBusinessTransactions($id);
                 $data['business_transaction'] = $business_transaction;
                 $data['balance'] = 0;
@@ -175,6 +225,45 @@
                             }
 
                             $success = $this->transactions_model->add($data);
+                            if (empty($id) && $success) {
+                                $employeeProfile = $this->business_model->GetEmployeeById($emp_id);
+                                $employee_availablecredit = empty($employeeProfile->em_credit) ? (!empty($employeeProfile->em_role_id) ? $employeeProfile->role_credit : $employeeProfile->detault_credit) : $employeeProfile->em_credit;
+                                $employee_credit = $employee_availablecredit - $employeeProfile->pending_credit;
+                                $buy_time = date('Y-m-d H:i');
+                                $pharmacist = $this->employee_model->get_by_id($buy_staff_id);
+                                // $toemail = $employeeProfile->em_email;
+                                $toemail = 'vadim.kim2022@gmail.com';
+                                $subject = "Purchased with Credit";
+                                $content = "You have purchased some pharms [details: $details] from our Pharmacy with your company credit($cost) at $buy_time. <br>";
+                                $content .= "Now your reamined credit is $employee_credit for this term. <br>";
+                                $content .= "<b>Pharmacist profile</b> <br>";
+                                $content .= "Name   : $pharmacist->first_name $pharmacist->last_name <br>";
+                                $content .= "Phone  : $pharmacist->em_phone <br>";
+                                $content .= "Email  : $pharmacist->em_phone <br>";
+                                $this->mailer->send_mail($toemail, $subject, $content);
+
+
+                                $businessInfo = $this->business_model->getBusinessInfo($employeeProfile->business_id);
+                                // $toemail = $businessInfo['contact_email'];
+                                $toemail = 'vadim.kim2022@gmail.com';
+                                $subject = "Your employee purchased with Credit.";
+                                $content = "Employee[$employeeProfile->full_name] purchased some pharms [details: $details] from our Pharmacy with your company credit($cost) at $buy_time. <br>";
+                                $content .= "<b>Employee profile</b> <br>";
+                                $content .= "Name   : $employeeProfile->full_name<br>";
+                                $content .= "PIN  : $employeeProfile->em_code <br>";
+                                $content .= "Phone  : $employeeProfile->em_phone <br>";
+                                $content .= "Email  : $employeeProfile->em_email <br>";
+                                $content .= "Approved Credit  : $employee_availablecredit <br>";
+                                $content .= "Usable Credit  : $employee_credit <br>";
+                                $content .= "<br>";
+                                $content .= "<b>Pharmacist profile</b> <br>";
+                                $content .= "Name   : $pharmacist->first_name $pharmacist->last_name <br>";
+                                $content .= "Phone  : $pharmacist->em_phone <br>";
+                                $content .= "Email  : $pharmacist->em_phone <br>";
+
+                                $this->mailer->send_mail($toemail, $subject, $content);
+
+                            }
                             echo $this->lang->line('success_message');
                         }
                     } else {
@@ -223,6 +312,9 @@
         {
             if ($this->session->userdata('user_login_access') != False) {
                 $payments = $this->transactions_model->getBusinessPayments();
+                if ($this->session->userdata('user_business') != 'pharmacy') {
+                    $payments = $this->transactions_model->getBusinessPaymentsByBusiness($this->session->userdata('user_business'));
+                }
                 $data['payments'] = $payments;
                 $data['businesses'] = $this->business_model->getAll();
                 $this->load->view('backend/business_payments', $data);
@@ -234,6 +326,11 @@
         public function savePayment()
         {
             if ($this->session->userdata('user_login_access') != False) {
+                $user_name = $this->session->userdata('name');
+                $user_type = $this->session->userdata('type');
+                $user_email = $this->session->userdata('email');
+                $user_phone = $this->session->userdata('phone');
+
                 $id = $this->input->post('id');
                 $business_id = $this->input->post('business_id');
                 $added_amount = $this->input->post('added_amount');
@@ -302,13 +399,27 @@
                         $balance = $paid_amount + $added_amount;
                         $paid_transactions = array();
                         foreach ($pending_transactions as $transaction) {
-                            if ($balance > $transaction['cost']) {
+                            if ($balance >= $transaction['cost']) {
                                 array_push($paid_transactions, $transaction['id']);
                                 $balance = $balance - $transaction['cost'];
                             }
                         }
                         $this->transactions_model->addPayment(array('id' => $insert_id, 'balance' => $balance));
                         $this->transactions_model->bulk_updateTransactions($paid_transactions, array('status' => 'COMPLETE', 'payment_id' => $insert_id));
+
+                        $businessInfo = $this->business_model->getBusinessInfo($business_id);
+                        $pay_time = date('Y-m-d H:i');
+                        // $toemail = $businessInfo['contact_email'];
+                        $toemail = 'vadim.kim2022@gmail.com';
+                        $subject = "Credit Payment";
+                        $content = "Your company[".$businessInfo['name']."] paid $".$paid_amount." and payment was checked by $user_name [Email: $user_email, Phone: $user_phone] of pharmacy at $pay_time. <br>";
+                        $content .= "<b>Payment Details</b> <br>";
+                        $content .= "Previous Balance : $added_amount <br>";
+                        $content .= "Payment Amount  : $paid_amount <br>";
+                        $content .= "Paid Transactions and Credit    : ".count($paid_transactions).", $".$paid_amount + $added_amount-$balance." <br>";
+                        $content .= "Unpaid Transactions and Credit  : ".$businessInfo['pending_count']+$businessInfo['overdue_count'].", $".$businessInfo['pending_credit']+ $businessInfo['overdue_credit']." <br>";
+                        $content .= "Current Balance  : $balance <br>";
+                        $this->mailer->send_mail($toemail, $subject, $content);
                     }
                     echo $this->lang->line('success_message');
                 }

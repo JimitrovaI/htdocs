@@ -166,7 +166,6 @@ class Employee extends MY_Controller
                             'em_birthday' => $dob,
                             'em_joining_date' => $joindate,
                             'em_contact_end' => $leavedate,
-                            'em_address' => $address,
                             'em_nid' => $nid,
                             'em_blood_group' => $blood
                         );
@@ -313,6 +312,20 @@ class Employee extends MY_Controller
     {
         if ($this->session->userdata('user_login_access') != False) {
             $id = base64_decode($this->input->get('I'));
+            $user_login_id = $this->session->userdata('user_login_id');
+            $user_type = $this->session->userdata('user_type');
+
+            if($user_login_id == $id){
+                $data['isprofile'] = true;
+            }else{
+                $data['isprofile'] = false;
+                if($user_type == 'SUPER ADMIN'){
+                    $data['isedit'] = true;
+                } else {
+                    $data['isedit'] = false;
+                }
+            }
+
             $data['basic'] = $this->employee_model->GetBasic($id);
             $data['permanent'] = $this->employee_model->GetperAddress($id);
             $data['present'] = $this->employee_model->GetpreAddress($id);

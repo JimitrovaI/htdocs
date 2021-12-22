@@ -12,6 +12,16 @@ class Login_model extends CI_Model
 	{
 		return $this->db->get_where('employee', $credential);
 	}
+
+	public function getEmployeeForLogin($credential)
+	{
+		$this->db->select('business_employees.*, business_role_credit.role');
+		$this->db->from('business_employees');
+		$this->db->join('business_role_credit','business_employees.em_role_id = business_role_credit.id');
+		$this->db->where($credential);
+		return $this->db->get();
+	}
+
 	public function getdata()
 	{
 		$query = $this->db->get('users');

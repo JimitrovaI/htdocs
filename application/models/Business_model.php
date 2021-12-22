@@ -61,7 +61,7 @@ class Business_model extends CI_Model
 
   public function GetEmployeeByBusinessId($id)
   {
-    $this->db->select('business_employees.*, business.name AS business, business_role_credit.role as business_role, business_role_credit.credit as role_credit, default_role_credit.credit as default_credit, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as pending_credit');
+    $this->db->select('business_employees.*, business.name AS business, business_role_credit.role as business_role, business_role_credit.credit as role_credit, default_role_credit.credit as default_credit, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as pending_credit, sum(case business_transactions.status when "OVERDUE" then business_transactions.cost else 0 end) as overdue_credit');
     $this->db->from('business_employees');
     $this->db->join('business', 'business_employees.business_id = business.id');
     $this->db->join('business_role_credit', 'business_employees.em_role_id = business_role_credit.id', 'left');
@@ -80,7 +80,7 @@ class Business_model extends CI_Model
 
   public function GetEmployeeById($id)
   {
-    $this->db->select('business_employees.*, business.name AS business, business_role_credit.role as business_role, business_role_credit.credit as role_credit, default_role_credit.credit as default_credit, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as pending_credit');
+    $this->db->select('business_employees.*, business.name AS business, business_role_credit.role as business_role, business_role_credit.credit as role_credit, default_role_credit.credit as default_credit, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as pending_credit, sum(case business_transactions.status when "OVERDUE" then business_transactions.cost else 0 end) as overdue_credit');
     $this->db->from('business_employees');
     $this->db->join('business', 'business_employees.business_id = business.id');
     $this->db->join('business_role_credit', 'business_employees.em_role_id = business_role_credit.id', 'left');
@@ -151,6 +151,18 @@ class Business_model extends CI_Model
     $this->db->update('business_employees', $data);
   }
 
+  public function delete_employee($id)
+  {
+    $this->db->select('id')->from('business_transactions');
+    $this->db->where('emp_id', $id);
+    if ($this->db->get()->num_rows() > 0) {
+      $this->db->where('id', $id);
+      $this->db->update('business_employees', array('status' => 'INACTIVE'));
+    } else {
+      $this->db->delete('business_employees', array('id' => $id));
+    }
+  }
+
   public function add_employee_address($data)
   {
     $this->db->insert('business_address', $data);
@@ -162,23 +174,38 @@ class Business_model extends CI_Model
     $this->db->update('business_address', $data);
   }
 
-  public function get_businessinfo()
+  public function getBusinessInfo($id = null)
   {
-    $this->db->select('business.id, business.name, count(business_employees.id) employees');
+
+    $this->db->select('business.*, COUNT(`business_transactions`.`id`) trs_count, COUNT(DISTINCT `business_employees`.`id`) emp_count, active_employee_counts.active_count, sum(case business_transactions.status when "COMPLETE" then business_transactions.cost else 0 end) as completed_credit, sum(case business_transactions.status when "COMPLETE" then 1 else 0 end) as completed_count, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as pending_credit, sum(case business_transactions.status when "PENDING" then 1 else 0 end) as pending_count, sum(case business_transactions.status when "OVERDUE" then business_transactions.cost else 0 end) as overdue_credit, sum(case business_transactions.status when "OVERDUE" then 1 else 0 end) as overdue_count');
     $this->db->from('business');
-    $this->db->join('business_employees', 'business.id = business_employees.business_id AND business_employees.status = "ACTIVE"', "left");
+    $this->db->join("(SELECT business_id, COUNT(id) AS active_count FROM business_employees WHERE STATUS= 'ACTIVE' GROUP BY business_id) as active_employee_counts", 'business.id = active_employee_counts.business_id', "left");
+    $this->db->join('business_employees', 'business.id = business_employees.business_id', "left");
+    $this->db->join('business_transactions', 'business_employees.id = business_transactions.emp_id', "left");
+    if ($id != null) {
+      $this->db->where('business.id', $id);
+    }
     $this->db->group_by('business.id');
-    return $this->db->get()->result_array();
+
+    $query = $this->db->get();
+    if ($id != null) {
+      return $query->row_array();
+    } else {
+      return $query->result_array();
+    }
   }
 
-  public function searchemployeebyFullText($searchterm)
+  public function searchemployeebyFullText($searchterm, $business_id = null)
   {
-    $this->db->select('business_employees.* ,business.name as business, business_role_credit.role as business_role, business_role_credit.credit as role_credit, default_role_credit.credit as default_credit, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as pending_credit')->from('business_employees');
+    $this->db->select('business_employees.* ,business.name as business, business_role_credit.role as business_role, business_role_credit.credit as role_credit, default_role_credit.credit as default_credit, sum(case business_transactions.status when "PENDING" then business_transactions.cost else 0 end) as pending_credit, sum(case business_transactions.status when "OVERDUE" then business_transactions.cost else 0 end) as overdue_credit')->from('business_employees');
     $this->db->join('business', 'business.id = business_employees.business_id');
     $this->db->join('business_role_credit', 'business_employees.em_role_id = business_role_credit.id', 'left');
     $this->db->join('business_role_credit as default_role_credit', 'business_employees.business_id = default_role_credit.business_id AND default_role_credit.role = "Default"', 'left');
     $this->db->join('business_transactions', 'business_employees.id = business_transactions.emp_id', 'left');
     $this->db->where('business_employees.status', 'ACTIVE');
+    if ($business_id != null) {
+      $this->db->where('business_employees.business_id', $business_id);
+    }
     $this->db->group_start();
     $this->db->like('business_employees.full_name', $searchterm);
     $this->db->or_like('business_employees.em_email', $searchterm);
@@ -252,13 +279,12 @@ class Business_model extends CI_Model
     $this->db->where('business_role_credit.business_id', $business_id);
     $this->db->where('business_role_credit.role', $role);
     $query = $this->db->get();
-    if($query->num_rows() > 0){
+    if ($query->num_rows() > 0) {
       $business_role = $query->row_array();
       return $business_role['id'];
-    }else{
-      $data = array('role'=>$role, 'business_id'=>$business_id, 'credit' =>10);
+    } else {
+      $data = array('role' => $role, 'business_id' => $business_id, 'credit' => 10);
       return $this->Add_BusinessRole($data);
     }
-   
   }
 }

@@ -16,36 +16,37 @@
     <!-- Container fluid  -->
     <!-- ============================================================== -->
     <div class="container-fluid">
-
-        <?php if ($business_transaction['total_price'] > 0) { ?>
-            <div class="row">
-                <div class="col-12">
-                    <div class="card">
-                        <div class="card-body">
-                            <h4 class="card-title"><?php echo $this->lang->line('transaction_payment') ?>: (<?php echo $this->lang->line('total_price') ?>: <?php echo $business_transaction['total_price'] ?>, <?php echo $this->lang->line('balance') ?>: <?php echo $balance ?>)</h4>
-                            <form class="row" action="savePayment" method="post" enctype="multipart/form-data">
-                                <div class="form-group col-md-4">
-                                    <label><?php echo $this->lang->line('paid_date') ?></label>
-                                    <input type="text" name="date_from" id="paid_date" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('paid_date') ?>">
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label><?php echo $this->lang->line('paid_amount') ?></label>
-                                    <input type="text" name="paid_amount" id="paid_amount" class="form-control" placeholder="<?php echo $this->lang->line('paid_amount') ?>" required>
-                                </div>
-                                <div class="form-group col-md-4">
-                                    <label><?php echo $this->lang->line('invoice') ?></label>
-                                    <input type="file" name="invoice" id="paytype" class="form-control" placeholder="<?php echo $this->lang->line('invoice') ?>" required>
-                                </div>
-                                <div class="col-md-12 form-group">
-                                    <input type="hidden" name="added_amount" value="<?php echo $balance ?>">
-                                    <input type="hidden" name="business_id" value="<?php echo $business_transaction['business_id'] ?>" required>
-                                    <input type="submit" class="btn btn-success" value="<?php echo $this->lang->line('submit') ?>" id="add_payment">
-                                </div>
-                            </form>
+        <?php if ($this->session->userdata('user_type') == 'SUPER ADMIN' || $this->session->userdata('user_type') == 'ACCOUNTANT') { ?>
+            <?php if ($business_transaction['total_price'] > 0) { ?>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4 class="card-title"><?php echo $this->lang->line('transaction_payment') ?>: (<?php echo $this->lang->line('total_price') ?>: <?php echo $business_transaction['total_price'] ?>, <?php echo $this->lang->line('balance') ?>: <?php echo $balance ?>)</h4>
+                                <form class="row" action="savePayment" method="post" enctype="multipart/form-data">
+                                    <div class="form-group col-md-4">
+                                        <label><?php echo $this->lang->line('paid_date') ?></label>
+                                        <input type="text" name="date_from" id="paid_date" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('paid_date') ?>">
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label><?php echo $this->lang->line('paid_amount') ?></label>
+                                        <input type="text" name="paid_amount" id="paid_amount" class="form-control" placeholder="<?php echo $this->lang->line('paid_amount') ?>" required>
+                                    </div>
+                                    <div class="form-group col-md-4">
+                                        <label><?php echo $this->lang->line('invoice') ?></label>
+                                        <input type="file" name="invoice" id="paytype" class="form-control" placeholder="<?php echo $this->lang->line('invoice') ?>" required>
+                                    </div>
+                                    <div class="col-md-12 form-group">
+                                        <input type="hidden" name="added_amount" value="<?php echo $balance ?>">
+                                        <input type="hidden" name="business_id" value="<?php echo $business_transaction['business_id'] ?>" required>
+                                        <input type="submit" class="btn btn-success" value="<?php echo $this->lang->line('submit') ?>" id="add_payment">
+                                    </div>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            <?php } ?>
         <?php } ?>
 
         <div class="row m-b-10">
@@ -74,6 +75,7 @@
                                         <th><?php echo $this->lang->line('total_price') ?></th>
                                         <th><?php echo $this->lang->line('sold_by') ?></th>
                                         <th><?php echo $this->lang->line('status') ?></th>
+                                        <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
 
@@ -88,6 +90,9 @@
                                             <th>
                                                 <?php echo $transaction['status'] == "COMPLETE" ? "<span class='badge badge-success'>" . $this->lang->line('completed') . "</span>" : "<span class='badge badge-info'>" . $this->lang->line('pending') . "</span>" ?>
                                             </th>
+                                            <td class="text-center">
+                                                <a href="<?php echo base_url(); ?>transaction/transaction_view?id=<?php echo base64_encode($transaction['id']) ?>" title="view" class="btn btn-sm btn-info waves-effect waves-light disiplinary" data-id="<?php echo $transaction['id']; ?>"><i class="fa fa-bars"></i></a>
+                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 </tbody>

@@ -19,8 +19,9 @@
 
         <div class="row m-b-10">
             <div class="col-12">
-                <input type="hidden" id="filter_type" value="all">
-                <button type="button" class="btn btn-info"><i class="fa fa-plus"></i><a href="<?php echo base_url(); ?>transaction/business_transaction" class="text-white"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('generate_payment') ?> </a></button>
+                <?php if ($this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN") { ?>
+                    <button type="button" class="btn btn-info"><i class="fa fa-plus"></i><a href="<?php echo base_url(); ?>transaction/business_transaction" class="text-white"><i class="" aria-hidden="true"></i> <?php echo $this->lang->line('generate_payment') ?> </a></button>
+                <?php } ?>
             </div>
         </div>
 
@@ -37,7 +38,7 @@
                                 <input type="text" name="date_to" id="date_to" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('to') ?>">
                             </div>
                             <div class="form-group col-md-3">
-                                <select class="form-control custom-select" tabindex="1" name="business_id" id="business_id">
+                                <select class="form-control custom-select" tabindex="1" name="business_id" id="business_id" <?php echo $this->session->userdata('user_business') != "pharmacy" ? "disabled" : '' ?>>
                                     <option value=""><?php echo $this->lang->line('business') ?></option>
                                     <?php foreach ($businesses as $business) { ?>
                                         <option value="<?php echo $business->name ?>"><?php echo $business->name ?></option>
@@ -94,7 +95,9 @@
                                             <th><?php echo $payment['added_amount'] ?></th>
                                             <th><?php echo $payment['balance'] ?></th>
                                             <td class="jsgrid-align-center ">
-                                                <a href="<?php echo base_url(); ?>transaction/payment_detail_view?id=<?php echo base64_encode($payment['id']) ?>" title="Edit" class="btn btn-sm btn-info waves-effect waves-light disiplinary" data-id="<?php echo $payment['id']; ?>"><i class="fa fa-pencil-square-o"></i></a>
+                                                <?php if ($this->session->userdata('user_business') == "pharmacy" && $this->session->userdata('user_type') == "SUPER ADMIN") { ?>
+                                                    <a href="<?php echo base_url(); ?>transaction/payment_detail_view?id=<?php echo base64_encode($payment['id']) ?>" title="Edit" class="btn btn-sm btn-info waves-effect waves-light disiplinary" data-id="<?php echo $payment['id']; ?>"><i class="fa fa-pencil-square-o"></i></a>
+                                                <?php } ?>
                                                 <a href="<?php echo base_url(); ?>transaction/payment_detail_view?id=<?php echo base64_encode($payment['id']) ?>" title="View" class="btn btn-sm btn-info waves-effect waves-light"><i class="fa fa-bars"></i></a>
                                             </td>
                                         </tr>
@@ -116,7 +119,7 @@
                     var where = $('#business_id').val();
                     var business = data[1];
                     var date = Date.parse(data[3]);
-                   
+
 
                     var from = Date.parse(date_from);
                     var to = Date.parse(date_to);

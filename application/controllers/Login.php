@@ -94,8 +94,28 @@ class Login extends CI_Controller
 			$this->session->set_userdata('staff_id', $row->id);
 			$this->session->set_userdata('name', $row->first_name);
 			$this->session->set_userdata('email', $row->em_email);
+			$this->session->set_userdata('phone', $row->em_phone);
 			$this->session->set_userdata('user_image', $row->em_image);
 			$this->session->set_userdata('user_type', $row->em_role);
+			$this->session->set_userdata('user_business', 'pharmacy');
+			return 'success';
+		}
+
+		$query = $this->login_model->getEmployeeForLogin($credential);
+		if ($query->num_rows() > 0) {
+			$row = $query->row();
+			$this->session->set_userdata('user_login_access', '1');
+			$this->session->set_userdata('user_login_id', $row->id);
+			$this->session->set_userdata('name', $row->full_name);
+			$this->session->set_userdata('email', $row->em_email);
+			$this->session->set_userdata('phone', $row->em_phone);
+			$this->session->set_userdata('user_image', $row->em_image);
+			if($row->role == 'Manager'){
+				$this->session->set_userdata('user_type', 'Manager');
+			}else{
+				$this->session->set_userdata('user_type', 'Employee');
+			}
+			$this->session->set_userdata('user_business', $row->business_id);
 			return 'success';
 		}
 	}

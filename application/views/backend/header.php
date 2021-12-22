@@ -45,13 +45,13 @@ date_default_timezone_set('Asia/Dhaka');
 <body class="fix-header fix-sidebar card-no-border">
     <?php
     $id = $this->session->userdata('user_login_id');
-    $basicinfo = $this->employee_model->GetBasic($id);
+    if ($this->session->userdata('user_business') == 'pharmacy') {
+        $basicinfo = $this->employee_model->GetBasic($id);
+    } else {
+        $basicinfo = $this->business_model->GetEmployeeById($id);
+    }
     $settingsvalue = $this->settings_model->GetSettingsValue();
-    $year =  date('y');
-    $y = substr($year, -2);
-    $date = date("m/d/$y");
-    #echo $date;
-    $leavetoday = $this->leave_model->GetLeaveToday($date);
+
     ?>
     <div class="preloader">
         <svg class="circular" viewBox="25 25 50 50">
@@ -63,8 +63,8 @@ date_default_timezone_set('Asia/Dhaka');
             <nav class="navbar top-navbar navbar-expand-md navbar-light">
                 <div class="navbar-header">
                     <a class="navbar-brand" href="<?php echo base_url(); ?>">
-                            <img src="<?php echo base_url(); ?>assets/images/logo-icon.png" alt="DRI" class="DRI-logo" style="height:50px;" />
-                        
+                        <img src="<?php echo base_url(); ?>assets/images/logo-icon.png" alt="DRI" class="DRI-logo" style="height:50px;" />
+
                         <!-- Logo text --><span>
                             <img src="<?php echo base_url(); ?>assets/images/<?php echo $settingsvalue->sitelogo; ?>" alt="homepage" class="dark-logo" height="50px" />
                             <!-- Light Logo text -->
@@ -72,10 +72,9 @@ date_default_timezone_set('Asia/Dhaka');
                 </div>
                 <div class="navbar-collapse">
                     <ul class="navbar-nav mr-auto mt-md-0">
-                        <!-- This is  -->
                         <li class="nav-item"> <a class="nav-link nav-toggler hidden-md-up text-muted waves-effect waves-dark" href="javascript:void(0)"><i class="mdi mdi-menu"></i></a> </li>
                         <li class="nav-item m-l-10"> <a class="nav-link sidebartoggler hidden-sm-down text-muted waves-effect waves-dark" href="javascript:void(0)"><i class="ti-menu"></i></a> </li>
-                        <li class="nav-item dropdown">
+                        <!-- <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle text-muted text-muted waves-effect waves-dark" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> <i class="mdi mdi-message"></i>
                                 <div class="notify"> <span class="heartbit"></span> <span class="point"></span> </div>
                             </a>
@@ -85,24 +84,11 @@ date_default_timezone_set('Asia/Dhaka');
                                         <div class="drop-title">Notifications</div>
                                     </li>
                                     <li>
-                                        <div class="message-center">
-                                            <!-- Message -->
-                                            <?php foreach ($leavetoday as $value) : ?>
-                                                <a href="#">
-                                                    <div class="btn btn-danger btn-circle"><i class="fa fa-link"></i></div>
-                                                    <div class="mail-contnet">
-                                                        <h5><?php echo $value->first_name; ?></h5> <span class="mail-desc"><?php echo $value->reason; ?></span> <span class="time"><?php echo $value->start_date; ?></span>
-                                                    </div>
-                                                </a>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </li>
-                                    <li>
                                         <a class="nav-link text-center" href="javascript:void(0);"> <strong>Check all notifications</strong> <i class="fa fa-angle-right"></i> </a>
                                     </li>
                                 </ul>
                             </div>
-                        </li>
+                        </li> -->
                     </ul>
                     <style>
                         .langdiv .bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
@@ -118,30 +104,45 @@ date_default_timezone_set('Asia/Dhaka');
                         .langdiv .bootstrap-select .dropdown-toggle:focus {
                             outline: none !important;
                         }
-
                     </style>
                     <div class="langdiv" style="display: inline-block;">
                         <select class="languageselectpicker" onchange="set_languages(this.value)" type="text" id="languageSwitcher">
-                            <option data-content='<span class="flag-icon flag-icon-us"></span> English' <?php if($this->session->userdata('language') == "English") echo "Selected" ?> value="English"> English </option>
-                            <option data-content='<span class="flag-icon flag-icon-es"></span> Española' <?php if($this->session->userdata('language') == "Spanish") echo "Selected" ?> value="Spanish"> Española </option>
+                            <option data-content='<span class="flag-icon flag-icon-us"></span> English' <?php if ($this->session->userdata('language') == "English") echo "Selected" ?> value="English"> English </option>
+                            <option data-content='<span class="flag-icon flag-icon-es"></span> Española' <?php if ($this->session->userdata('language') == "Spanish") echo "Selected" ?> value="Spanish"> Española </option>
                         </select>
                     </div>
                     <ul class="navbar-nav my-lg-0">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="<?php echo base_url(); ?>assets/images/users/<?php echo $basicinfo->em_image; ?>" alt="Genit" class="profile-pic" style="height:40px;width:40px;border-radius:50px" /></a>
+                            <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                                <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="<?php echo base_url(); ?>assets/images/users/<?php echo $basicinfo->em_image ?? 'user.png'; ?>" alt="Genit" class="profile-pic" style="height:40px;width:40px;border-radius:50px" /></a>
+                            <?php } else { ?>
+                                <a class="nav-link dropdown-toggle text-muted waves-effect waves-dark" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><img src="<?php echo base_url(); ?>assets/images/<?php echo $basicinfo->em_image ? 'business/' . $basicinfo->em_image : 'users/user.png'; ?>" alt="Genit" class="profile-pic" style="height:40px;width:40px;border-radius:50px" /></a>
+                            <?php } ?>
                             <div class="dropdown-menu dropdown-menu-right scale-up">
                                 <ul class="dropdown-user">
                                     <li>
                                         <div class="dw-user-box">
-                                            <div class="u-img"><img src="<?php echo base_url(); ?>assets/images/users/<?php echo $basicinfo->em_image; ?>" alt="user"></div>
+                                            <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                                                <div class="u-img"><img src="<?php echo base_url(); ?>assets/images/users/<?php echo $basicinfo->em_image ?? 'user.png'; ?>" alt="user"></div>
+                                            <?php } else { ?>
+                                                <div class="u-img"><img src="<?php echo base_url(); ?>assets/images/<?php echo $basicinfo->em_image ? 'business/' . $basicinfo->em_image : 'users/user.png'; ?>" alt="user"></div>
+                                            <?php } ?>
                                             <div class="u-text">
-                                                <h4><?php echo $basicinfo->first_name . ' ' . $basicinfo->last_name; ?></h4>
+                                                <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                                                    <h4><?php echo $basicinfo->first_name . ' ' . $basicinfo->last_name; ?></h4>
+                                                <?php } else { ?>
+                                                    <h4><?php echo $basicinfo->full_name; ?></h4>
+                                                <?php } ?>
                                                 <p class="text-muted"><?php echo $basicinfo->em_email ?></p>
                                             </div>
                                     </li>
                                     <li role="separator" class="divider"></li>
-                                    <li><a href="<?php echo base_url(); ?>employee/view?I=<?php echo base64_encode($basicinfo->em_id); ?>"><i class="ti-user"></i> My Profile</a></li>
-                                    <?php if ($this->session->userdata('user_type') != 'EMPLOYEE') { ?>
+                                    <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                                        <li><a href="<?php echo base_url(); ?>employee/view?I=<?php echo base64_encode($basicinfo->em_id); ?>"><i class="ti-user"></i> My Profile</a></li>
+                                    <?php } else { ?>
+                                        <li><a href="<?php echo base_url(); ?>business/edit_employee?id=<?php echo base64_encode($basicinfo->id); ?>"><i class="ti-user"></i> My Profile</a></li>
+                                    <?php } ?>
+                                    <?php if ($this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
 
                                         <li><a href="<?php echo base_url(); ?>settings/Settings"><i class="ti-settings"></i> Account Setting</a></li>
                                     <?php } ?>
@@ -158,10 +159,10 @@ date_default_timezone_set('Asia/Dhaka');
             function set_languages(lang_id) {
                 $.ajax({
                     type: "POST",
-                    url: "<?php echo base_url(); ?>login/user_language/"+lang_id,
+                    url: "<?php echo base_url(); ?>login/user_language/" + lang_id,
                     data: {},
                     //dataType: "json",
-                    success: function (data) {
+                    success: function(data) {
                         // successMsg("Status Change Successfully");
                         window.location.reload('true');
 

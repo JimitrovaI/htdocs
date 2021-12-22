@@ -27,7 +27,14 @@
         public function business()
         {
             if ($this->session->userdata('user_login_access') != False) {
-                $data['businesses'] = $this->business_model->getAll();
+                
+                // if($this->mailer->send_mail('vadim.kim2022@gmail.com', 'Pharmacy Mail Test', 'mail test success')){
+                //     echo 'send successfully';
+                // }else{
+                //     echo 'send failed';
+                // }
+                // exit;
+                $data['businesses'] = $this->business_model->getBusinessInfo();
                 $this->load->view('backend/business', $data);
             } else {
                 redirect(base_url(), 'refresh');
@@ -36,9 +43,11 @@
 
         public function save()
         {
-            if ($this->session->userdata('user_login_access') != False) {
+            if ($this->session->userdata('user_login_access') != False && $this->session->userdata('user_type') == 'SUPER ADMIN') {
+                $id = $this->input->post('id');
                 $bname = $this->input->post('business');
                 $government_id = $this->input->post('government_id');
+                $payment_agreement = $this->input->post('payment_agreement');
                 $contact_person = $this->input->post('contact_person');
                 $contact_email = $this->input->post('contact_email');
                 $contact_phone = $this->input->post('contact_phone');
@@ -51,10 +60,15 @@
                     echo json_encode($response);
                 } else {
                     $data = array();
-                    $data = array('name' => $bname, 'government_id' => $government_id, 'contact_person' => $contact_person, 'contact_email' => $contact_email, 'contact_phone' => $contact_phone);
+                    $data = array('name' => $bname, 'government_id' => $government_id, 'payment_agreement' => $payment_agreement, 'contact_person' => $contact_person, 'contact_email' => $contact_email, 'contact_phone' => $contact_phone);
+
+                    if (!empty($id)) {
+                        $data['id'] = $id;
+                    }
+
                     $success = $this->business_model->Add_Business($data);
 
-                    if ($success) {
+                    if ($success && empty($id)) {
                         $role_manager = array('business_id' => $success, 'role' => 'Manager', 'credit' => 100);
                         $this->business_model->Add_BusinessRole($role_manager);
 
@@ -69,6 +83,7 @@
                 redirect(base_url(), 'refresh');
             }
         }
+
         public function delete($id)
         {
             if ($this->session->userdata('user_login_access') != False) {
@@ -79,11 +94,12 @@
                 redirect(base_url(), 'refresh');
             }
         }
+
         public function edit($id)
         {
             if ($this->session->userdata('user_login_access') != False) {
-                $data['businesses'] = $this->business_model->getAll();
-                $data['editbusiness'] = $this->business_model->getById($id);
+                $data['businesses'] = $this->business_model->getBusinessInfo();
+                $data['editbusiness'] = $this->business_model->getBusinessInfo($id);
                 $this->load->view('backend/business', $data);
             } else {
                 redirect(base_url(), 'refresh');
@@ -126,6 +142,10 @@
             if ($this->session->userdata('user_login_access') != False) {
                 $data['businesses'] = $this->business_model->getAll();
                 $data['business_roles'] = $this->business_model->getRoles();
+                if ($this->session->userdata('user_business') != 'pharmacy') {
+                    $data['business_id'] = $this->session->userdata('user_business');
+                    $data['business_roles'] = $this->business_model->getRoles($data['business_id'], true);
+                }
                 $this->load->view('backend/business_role', $data);
             } else {
                 redirect(base_url(), 'refresh');
@@ -175,6 +195,10 @@
                 $data['businesses'] = $this->business_model->getAll();
                 $data['business_roles'] = $this->business_model->getRoles();
                 $data['editrole'] = $this->business_model->getRoles($id);
+                if ($this->session->userdata('user_business') != 'pharmacy') {
+                    $data['business_id'] = $this->session->userdata('user_business');
+                    $data['business_roles'] = $this->business_model->getRoles($data['business_id'], true);
+                }
                 $this->load->view('backend/business_role', $data);
             } else {
                 redirect(base_url(), 'refresh');
@@ -239,12 +263,19 @@
                         <td>$value->em_email</td>
                         <td>$value->em_phone hours</td>
                         <td>$em_role</td>
-                        <td>$em_credit</td>
-                        <td class='jsgrid-align-center'>
+                        <td>$em_credit</td>";
+                    if ($this->session->userdata('user_business') != 'pharmacy' || ($this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN')) {
+                        echo "<td class='text-center'>
                             <a href='" . base_url() . "business/edit_employee?id=" . base64_encode($value->id) . "' title='" . $this->lang->line('edit') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-pencil-square-o'></i></a>
-                            <a onclick='return confirm(\"" . $this->lang->line('are_you_sure_to_delete_this') . "\")' href='" . base_url() . "business/delete_employee/" . base64_encode($value->id) . "' title='" . $this->lang->line('delete') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-trash-o'></i></a>
-                        </td>
-                    </tr>";
+                            <a onclick='return confirm(\"" . $this->lang->line('are_you_sure_to_delete_this') . "\")' href='" . base_url() . "business/delete_employee?id=" . base64_encode($value->id) . "' title='" . $this->lang->line('delete') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-trash-o'></i></a>
+                        </td>";
+                    }else{
+                        echo "<td class='text-center'>
+                            <a href='" . base_url() . "business/edit_employee?id=" . base64_encode($value->id) . "' title='" . $this->lang->line('view') . "' class='btn btn-sm btn-info waves-effect waves-light'><i class='fa fa-bars'></i></a>
+                        </td>";
+
+                    }
+                    echo "</tr>";
                 }
             } else {
                 echo "<p>No Data Found</p>";
@@ -255,6 +286,9 @@
         {
             if ($this->session->userdata('user_login_access') != False) {
                 $data['businesses'] = $this->business_model->getAll();
+                if ($this->session->userdata('user_business') != 'pharmacy') {
+                    $data['business'] = $this->business_model->getBusinessInfo($this->session->userdata('user_business'));
+                }
                 $this->load->view('backend/business_employees', $data);
             } else {
                 redirect(base_url(), 'refresh');
@@ -265,8 +299,23 @@
         {
             if ($this->session->userdata('user_login_access') != False) {
                 $data['business_id'] = $business_id;
+                if ($this->session->userdata('user_business') != 'pharmacy') {
+                    $data['business_id'] = $this->session->userdata('user_business');
+                }
                 $data['businesses'] = $this->business_model->getAll();
                 $this->load->view('backend/business-add-employee', $data);
+            } else {
+                redirect(base_url(), 'refresh');
+            }
+        }
+
+        public function delete_employee()
+        {
+            if ($this->session->userdata('user_login_access') != False) {
+                $id = base64_decode($this->input->get('id'));
+                $this->business_model->delete_employee($id);
+                $this->session->set_flashdata('delsuccess', $this->lang->line('delete_message'));
+                redirect('business/business_employees');
             } else {
                 redirect(base_url(), 'refresh');
             }
@@ -296,11 +345,15 @@
 
         public function save_employee()
         {
-            if ($this->session->userdata('user_login_access') != False) {
+           
+            if ($this->session->userdata('user_login_access') != False || $this->session->userdata('user_type') == 'PHARMACIST' || $this->session->userdata('user_type') == 'ACCOUNTANT') {
                 $id = $this->input->post('id');
                 $em_code = $this->input->post('em_code');
                 $full_name = $this->input->post('full_name');
                 $business_id = $this->input->post('business_id');
+                if ($this->session->userdata('user_business') != 'pharmacy') {
+                    $business_id = $this->session->userdata('user_business');
+                }
                 $em_role_id = $this->input->post('em_role_id');
                 $em_gender = $this->input->post('em_gender');
                 $em_phone = $this->input->post('em_phone');
@@ -384,10 +437,39 @@
 
                         if (!empty($id)) {
                             $success = $this->business_model->update_employee($data, $id);
+                            if($success){
+                                $employeeProfile = $this->business_model->GetEmployeeById($success);
+                                $employee_credit = empty($employeeProfile->em_credit) ? (!empty($employeeProfile->em_role_id)?$employeeProfile->role_credit: $employeeProfile->detault_credit) :$employeeProfile->em_credit;
+                                // $toemail = $employeeProfile->em_email;
+                                $toemail = 'vadim.kim2022@gmail.com';
+                                $subject = "Successfully Sign up";
+                                $content = "Your account has been signed up successfully. <br>";
+                                $content .= "From now you can buy all products of our pharmacy using your business credit. <br>";
+                                $content .= "Your profile <br>";
+                                $content .= "Business : $employeeProfile->business <br>";
+                                $content .= "Name     : $employeeProfile->full_name <br>";
+                                $content .= "Phone    : $employeeProfile->em_phone <br>";
+                                $content .= "Credit   : $employee_credit <br>";
+                                $this->mailer->send_mail($toemail, $subject, $content);
+                            }
                             echo $this->lang->line('update_message');
                         } else {
                             $data['em_password'] = $password;
                             $success = $this->business_model->add_employee($data);
+                            if($success){
+                                $employeeProfile = $this->business_model->GetEmployeeById($success);
+                                $employee_credit = empty($employeeProfile->em_credit) ? (!empty($employeeProfile->em_role_id)?$employeeProfile->role_credit: $employeeProfile->detault_credit) :$employeeProfile->em_credit;
+                                // $toemail = $employeeProfile->em_email;
+                                $toemail = 'vadim.kim2022@gmail.com';
+                                $subject = "Your Profile Updated";
+                                $content = "Your account has been updated. <br>";
+                                $content .= "Your profile <br>";
+                                $content .= "Business : $employeeProfile->business <br>";
+                                $content .= "Name     : $employeeProfile->full_name <br>";
+                                $content .= "Phone    : $employeeProfile->em_phone <br>";
+                                $content .= "Credit   : $employee_credit <br>";
+                                $this->mailer->send_mail($toemail, $subject, $content);
+                            }
                             echo $this->lang->line('success_message');
                         }
                     }
@@ -476,7 +558,11 @@
 
         public function import()
         {
-            $business_id = $this->input->post('business_id');
+            if ($this->session->userdata('user_business') == 'pharmacy') {
+                $business_id = $this->input->post('business_id');
+            } else {
+                $business_id = $this->session->userdata('user_business');
+            }
             $this->load->library('csvimport');
             $file_data = $this->csvimport->get_array($_FILES["csv_file"]["tmp_name"]);
             //echo $file_data;
@@ -514,7 +600,23 @@
                 } else {
                     $added++;
                 }
-                $this->business_model->add_employee($data);
+
+                $success = $this->business_model->add_employee($data);
+                // if($success){
+                //     $employeeProfile = $this->business_model->GetEmployeeById($success);
+                //     $employee_credit = empty($employeeProfile->em_credit) ? (!empty($employeeProfile->em_role_id)?$employeeProfile->role_credit: $employeeProfile->detault_credit) :$employeeProfile->em_credit;
+                //     // $toemail = $employeeProfile->em_email;
+                //     $toemail = 'vadim.kim2022@gmail.com';
+                //     $subject = "Successfully Sign up";
+                //     $content = "Your account has been signed up successfully. <br>";
+                //     $content .= "From now you can buy all products of our pharmacy using your business credit. <br>";
+                //     $content .= "Your profile <br>";
+                //     $content .= "Business : $employeeProfile->business <br>";
+                //     $content .= "Name     : $employeeProfile->full_name <br>";
+                //     $content .= "Phone    : $employeeProfile->em_phone <br>";
+                //     $content .= "Credit   : $employee_credit <br>";
+                //     $this->mailer->send_mail($toemail, $subject, $content);
+                // }
             }
             echo "Success Import<br>Added: $added, Updated: $updated";
         }
@@ -527,13 +629,75 @@
                 echo json_encode($response);
             } else {
                 $roles = $this->business_model->getRoles($business_id, true);
-                
+
                 $options = '';
-                foreach($roles as $role) {
-                    $options .= '<option value="'.$role['id'].'">'.$role['role'].' ('.$this->lang->line('credit').': '.$role['credit'] .')</option>';
+                foreach ($roles as $role) {
+                    $options .= '<option value="' . $role['id'] . '">' . $role['role'] . ' (' . $this->lang->line('credit') . ': ' . $role['credit'] . ')</option>';
                 }
                 $response = array('success' => 1, 'data' => $options);
                 echo json_encode($response);
+            }
+        }
+
+        public function cron_checkpaydate()
+        {
+            if ($this->input->is_cli_request()) {
+                $businesses = $this->db->getBusinessInfo();
+
+                foreach ($businesses as $business) {
+                    $credit = $business['pending_credit'] + $business['overdue_credit'];
+                    $credit_count = $business['pending_count'] + $business['overdue_count'];
+                    $pay_rule = $business['payment_agreement'];
+                    $today_date = date('j');
+                    $today_day = date('w');
+                    $month_last_day = date('t');
+                    $is_pay_date = false;
+
+                    if ($pay_rule == "WEEK" && $today_day == 5) {
+                        $is_pay_date = true;
+                    }
+
+                    if ($pay_rule == "TWICE") {
+                        if ($today_date == 15 || $today_date == 30 || ($month_last_day < 30 && $today_date == $month_last_day)) {
+                            $is_pay_date = true;
+                        }
+                    }
+
+                    if ($pay_rule == "MONTH" && $today_day == 1) {
+                        $is_pay_date = true;
+                    }
+
+                    if ($is_pay_date && $credit > 0) {
+                        // $toemail = $business['contact_email'];
+                        $toemail = 'vadim.kim2022@gmail.com';
+                        $subject = 'Payment Date';
+                        $content = 'payment date is ' . date('Y-m-d') . "<br>";
+                        $content .= $business['name'] . ' has ' . $credit_count . ' counts and $' . $credit . ' of transactions to pay.';
+                        $this->mailer->send_mail($toemail, $subject, $content);
+                    }
+
+                    $is_overdue_date = false;
+                    if ($pay_rule == "WEEK" && $today_day == 6) {
+                        $is_overdue_date = true;
+                    }
+
+                    if ($pay_rule == "TWICE") {
+                        if ($today_date == 16 || $today_date == 31 || ($today_date == 1 && date('t', strtotime(date('Y-m-d') . " -1 month")) < 31)) {
+                            $is_overdue_date = true;
+                        }
+                    }
+
+                    if ($pay_rule == "MONTH" && $today_day == 2) {
+                        $is_overdue_date = true;
+                    }
+
+                    if ($is_pay_date && $credit > 0) {
+                        $pay_date = date('Y-m-d', strtotime(date('Y-m-d') . " -1 day"));
+                        $this->transactions_model->overdueBusinessTransactions($business['id'], $pay_date);
+                    }
+                }
+            } else {
+                echo "You dont have access";
             }
         }
     }

@@ -1,5 +1,11 @@
 <?php $this->load->view('backend/header'); ?>
 <?php $this->load->view('backend/sidebar'); ?>
+<style type="text/css">
+    .seller_link {
+        padding: 0.45rem 0.75rem;
+        border: 1px solid rgba(0, 0, 0, .15);
+    }
+</style>
 <div class="page-wrapper">
     <div class="message"></div>
     <div class="row page-titles">
@@ -44,54 +50,69 @@
                                         <small class="text-muted p-t-30 db"><?php echo $this->lang->line('job_title') ?></small>
                                         <h6><?php echo $basic->em_job_title; ?></h6>
                                         <small class="text-muted p-t-30 db"><?php echo $this->lang->line('credit') ?></small>
-                                        <h6><?php echo $this->lang->line('approved_credit') ?>: <?php echo empty($basic->em_credit) ? (empty($basic->role_credit)? $basic->default_credit : $basic->role_credit) : $basic->em_credit; ?></h6>
+                                        <h6><?php echo $this->lang->line('approved_credit') ?>: <?php echo empty($basic->em_credit) ? (empty($basic->role_credit) ? $basic->default_credit : $basic->role_credit) : $basic->em_credit; ?></h6>
                                         <h6><?php echo $this->lang->line('pending_credit') ?>: <?php echo $basic->pending_credit; ?></h6>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-8">
-                                <form class="row" action="saveTransaction" method="post" enctype="multipart/form-data">
-
-                                    <div class="form-group col-md-4 m-t-10">
-                                        <label><?php echo $this->lang->line('purchase_date') ?> </label>
-                                        <input type="text" name="buy_date" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('date') ?>" value="<?php echo date('Y-m-d', strtotime($transaction['buy_date'])); ?>" required>
-                                    </div>
-
-                                    <div class="form-group col-md-4 m-t-10">
-                                        <label><?php echo $this->lang->line('total_price') ?></label>
-                                        <input type="number" name="cost" value="<?php echo $transaction['cost']; ?>" class="form-control" id="recipient-name1" required>
-                                    </div>
-
-                                    <div class="form-group col-md-4 m-t-10">
-                                        <label><?php echo $this->lang->line('sold_by') ?> </label>
-                                        <select name="buy_staff_id" class="form-control custom-select">
-                                            <?php foreach ($staffs as $staff) { ?>
-                                                <option <?php if ($transaction['buy_staff_id'] == $staff->id) echo "Selected" ?> value="<?php echo $staff->id ?>"><?php echo $staff->first_name ?></option>
-                                            <?php } ?>
-                                        </select>
-                                    </div>
-
-                                    <div class="form-group col-md-12 m-t-10">
-                                        <label class="control-label"><?php echo $this->lang->line('details') ?></label>
-                                        <textarea class="form-control" name="details" id="message-text1" required rows="4"><?php echo $transaction['details']; ?></textarea>
-                                    </div>
-                                   
-                                    <div class="form-group col-md-6 m-t-10">
-                                        <label><?php echo $this->lang->line('bill') ?> </label>
-                                        <img src="<?php echo base_url(); ?>assets/images/bills/<?php echo $transaction['bill']; ?>" class="bill_preview" width="100%" />
-                                        <input type="file" name="bill" class="form-control" value="">
-                                    </div>
-
-                                    <?php if ($this->session->userdata('user_type') == 'EMPLOYEE') { ?>
+                                <?php if ($this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
+                                    <form class="row" action="saveTransaction" method="post" enctype="multipart/form-data">
                                     <?php } else { ?>
-                                        <div class="form-actions col-md-12">
-                                            <input type="hidden" name="id" value="<?php echo $transaction['id']; ?>">
-                                            <input type="hidden" name="emp_id" value="<?php echo $transaction['emp_id']; ?>">
-                                            <button type="submit" class="btn btn-info"> <i class="fa fa-check"></i> <?php echo $this->lang->line('save') ?></button>
-                                            <button type="reset" class="btn btn-info"><?php echo $this->lang->line('cancel') ?></button>
+                                        <div class='row'>
+                                        <?php } ?>
+
+                                        <div class="form-group col-md-4 m-t-10">
+                                            <label><?php echo $this->lang->line('purchase_date') ?> </label>
+                                            <input type="text" name="buy_date" class="form-control mydatetimepickerFull" placeholder="<?php echo $this->lang->line('date') ?>" value="<?php echo date('Y-m-d', strtotime($transaction['buy_date'])); ?>" required <?php echo $this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN' ? '' : 'disabled'; ?>>
                                         </div>
-                                    <?php } ?>
-                                </form>
+                                        <div class="form-group col-md-4 m-t-10">
+                                            <label><?php echo $this->lang->line('total_price') ?></label>
+                                            <input type="number" name="cost" value="<?php echo $transaction['cost']; ?>" class="form-control" id="recipient-name1" required <?php echo $this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN' ? '' : 'readonly'; ?>>
+                                        </div>
+
+                                        <div class="form-group col-md-4 m-t-10">
+                                            <label><?php echo $this->lang->line('sold_by') ?> </label>
+                                            <?php if ($this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
+                                                <select name="buy_staff_id" class="form-control custom-select">
+                                                    <?php foreach ($staffs as $staff) { ?>
+                                                        <option <?php if ($transaction['buy_staff_id'] == $staff->id) echo "Selected" ?> value="<?php echo $staff->id ?>"><?php echo $staff->first_name ?></option>
+                                                    <?php } ?>
+                                                </select>
+                                            <?php } else { ?>
+                                                <?php foreach ($staffs as $staff) { ?>
+                                                    <?php if ($transaction['buy_staff_id'] == $staff->id) { ?>
+                                                        <br>
+                                                        <div class="seller_link ">
+                                                            <a class="" href="javascript:;" onclick="viewsellerinfo()"> <?php echo $staff->first_name ?> <?php echo $staff->last_name ?></a>
+                                                        </div>
+                                                    <?php } ?>
+                                                <?php } ?>
+                                            <?php } ?>
+                                        </div>
+
+                                        <div class="form-group col-md-12 m-t-10">
+                                            <label class="control-label"><?php echo $this->lang->line('details') ?></label>
+                                            <textarea class="form-control" name="details" id="message-text1" required rows="4" <?php echo $this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN' ? '' : 'readonly'; ?>><?php echo $transaction['details']; ?></textarea>
+                                        </div>
+
+                                        <div class="form-group col-md-6 m-t-10">
+                                            <label><?php echo $this->lang->line('bill') ?> </label>
+                                            <img src="<?php echo base_url(); ?>assets/images/bills/<?php echo $transaction['bill']; ?>" class="bill_preview" width="100%" />
+                                            <?php if ($this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
+                                                <input type="file" name="bill" class="form-control" value="">
+                                            <?php } ?>
+                                        </div>
+
+                                        <?php if ($this->session->userdata('user_business') == 'pharmacy' && $this->session->userdata('user_type') == 'SUPER ADMIN') { ?>
+                                            <div class="form-actions col-md-12">
+                                                <input type="hidden" name="id" value="<?php echo $transaction['id']; ?>">
+                                                <input type="hidden" name="emp_id" value="<?php echo $transaction['emp_id']; ?>">
+                                                <button type="submit" class="btn btn-info"> <i class="fa fa-check"></i> <?php echo $this->lang->line('save') ?></button>
+                                                <button type="reset" class="btn btn-info"><?php echo $this->lang->line('cancel') ?></button>
+                                            </div>
+                                        <?php } ?>
+                                    </form>
                             </div>
                         </div>
                     </div>
@@ -99,12 +120,15 @@
             </div>
             <!-- Column -->
         </div>
+        <?php $this->load->view('backend/pharmacist_modal'); ?>
+        <?php $this->load->view('backend/footer'); ?>
         <script>
+            function viewsellerinfo(){
+                $('#PharmacistViewModal').modal('show');
+            }
             $(document).ready(function() {
                 $('input[type="file"]').change(function(event) {
-                    $(this).prev().fadeIn("fast").attr('src',URL.createObjectURL(event.target.files[0]));
+                    $(this).prev().fadeIn("fast").attr('src', URL.createObjectURL(event.target.files[0]));
                 })
             })
-
         </script>
-        <?php $this->load->view('backend/footer'); ?>

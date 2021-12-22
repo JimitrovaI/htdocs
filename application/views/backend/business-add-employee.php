@@ -40,7 +40,7 @@
                             </div>
                             <div class="form-group col-md-3 m-t-20">
                                 <label><?php echo $this->lang->line('business') ?></label>
-                                <select name="business_id" id="business_id" class="form-control" value="" class="form-control custom-select" required>
+                                <select name="business_id" id="business_id" class="form-control" value="" class="form-control custom-select" required <?php echo $this->session->userdata('user_business') != 'pharmacy' ? "disabled" : "" ?>>
                                     <option value=""><?php echo $this->lang->line('select_business') ?> </option>
                                     <?Php foreach ($businesses as $business) : ?>
                                         <option <?php if ($business_id == $business->id) echo 'Selected' ?> value="<?php echo $business->id ?>"><?php echo $business->name ?></option>
@@ -111,24 +111,29 @@
         <?php $this->load->view('backend/footer'); ?>
 
         <script type="text/javascript">
+            function get_roles() {
+                $('#business_roles').html('<option value=""><?php echo $this->lang->line('select_role') ?></option>');
+                var business_id = $('#business_id').val();
+
+                if (business_id !== "") {
+                    $.ajax({
+                        url: "getRoleByBusinessId",
+                        type: "POST",
+                        data: {
+                            business_id: business_id
+                        },
+                        dataType: 'json',
+                        success: function(response) {
+                            $('#business_roles').append(response.data);
+                        }
+                    });
+                }
+            }
+
             $(document).ready(function() {
+                get_roles();
                 $("#business_id").on("change", function(event) {
-
-                    $('#business_roles').html('<option value=""><?php echo $this->lang->line('select_role') ?></option>');
-                    var business_id = $('#business_id').val();
-
-                    if (business_id !== "") {
-                        $.ajax({
-                            url: "getRoleByBusinessId",
-                            type: "POST",
-                            data: {business_id: business_id},
-                            dataType: 'json',
-                            success: function(response) {
-                                $('#business_roles').append(response.data);
-                            }
-                        });
-                    }
-
+                    get_roles();
                 });
             });
         </script>

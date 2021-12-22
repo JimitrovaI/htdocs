@@ -52,7 +52,7 @@
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label><?php echo $this->lang->line('business') ?></label>
-                                                <select name="business_id" value="" class="form-control custom-select" required>
+                                                <select name="business_id" value="" class="form-control custom-select" required <?php echo $this->session->userdata('user_business') != 'pharmacy' ? "disabled" : "" ?>>
                                                     <option value=""><?php echo $this->lang->line('select_business') ?> </option>
                                                     <?Php foreach ($businesses as $business) : ?>
                                                         <option <?php echo $editrole['business_id'] === $business->id ? "selected" : "" ?> value="<?php echo $business->id ?>"><?php echo $business->name ?></option>
@@ -92,7 +92,7 @@
 
                     <div class="card card-outline-info">
                         <div class="card-header">
-                            <h4 class="m-b-0 text-white"><?php echo $this->lang->line('add_business') ?></h4>
+                            <h4 class="m-b-0 text-white"><?php echo $this->lang->line('add_business_role') ?></h4>
                         </div>
 
                         <?php echo validation_errors(); ?>
@@ -107,10 +107,10 @@
                                         <div class="col-md-12">
                                             <div class="form-group">
                                                 <label><?php echo $this->lang->line('business') ?></label>
-                                                <select name="business_id" value="" class="form-control custom-select" required>
+                                                <select name="business_id" value="" class="form-control custom-select" required <?php echo $this->session->userdata('user_business') != 'pharmacy' ? "disabled" : "" ?>>
                                                     <option value=""><?php echo $this->lang->line('select_business') ?> </option>
                                                     <?Php foreach ($businesses as $business) : ?>
-                                                        <option value="<?php echo $business->id ?>"><?php echo $business->name ?></option>
+                                                        <option <?php echo $this->session->userdata('user_business') != 'pharmacy' && $business_id === $business->id ? "selected" : "" ?> value="<?php echo $business->id ?>"><?php echo $business->name ?></option>
                                                     <?php endforeach; ?>
                                                 </select>
                                             </div>
@@ -145,25 +145,28 @@
             <div class="col-lg-8">
                 <div class="card card-outline-info">
                     <div class="card-header">
-                        <h4 class="m-b-0 text-white"><?php echo $this->lang->line('business_list') ?></h4>
+                        <h4 class="m-b-0 text-white"><?php echo $this->lang->line('business_role') ?></h4>
                     </div>
                     <?php echo $this->session->flashdata('delsuccess'); ?>
                     <div class="card-body">
-
-                        <div class="form-group business-select2">
-                            <select class="select2 form-control" data-placeholder="Choose a Category" tabindex="1" id="businessid" name="businessid" required>
-                                <option value="all"><?php echo $this->lang->line('all_business') ?></option>
-                                <?php foreach ($businesses as $business) { ?>
-                                    <option value="<?php echo $business->name ?>"><?php echo $business->name; ?></option>
-                                <?php } ?>
-                            </select>
-                        </div>
+                        <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                            <div class="form-group business-select2">
+                                <select class="select2 form-control" data-placeholder="Choose a Category" tabindex="1" id="businessid" name="businessid" required>
+                                    <option value="all"><?php echo $this->lang->line('all_business') ?></option>
+                                    <?php foreach ($businesses as $business) { ?>
+                                        <option value="<?php echo $business->name ?>"><?php echo $business->name; ?></option>
+                                    <?php } ?>
+                                </select>
+                            </div>
+                        <?php } ?>
 
                         <div class="table-responsive ">
                             <table id="employee_role_table" class="display  table table-hover table-striped table-bordered" cellspacing="0" width="100%">
                                 <thead>
                                     <tr>
-                                        <th><?php echo $this->lang->line('business') ?></th>
+                                        <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                                            <th><?php echo $this->lang->line('business') ?></th>
+                                        <?php } ?>
                                         <th><?php echo $this->lang->line('role') ?></th>
                                         <th><?php echo $this->lang->line('credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
@@ -171,7 +174,9 @@
                                 </thead>
                                 <tfoot>
                                     <tr>
-                                        <th><?php echo $this->lang->line('business') ?></th>
+                                        <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                                            <th><?php echo $this->lang->line('business') ?></th>
+                                        <?php } ?>
                                         <th><?php echo $this->lang->line('role') ?></th>
                                         <th><?php echo $this->lang->line('credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
@@ -181,9 +186,11 @@
                                 <tbody>
                                     <?php foreach ($business_roles as $value) { ?>
                                         <tr>
-                                            <td>
-                                                <?php echo $value['business']; ?>
-                                            </td>
+                                            <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                                                <td>
+                                                    <?php echo $value['business']; ?>
+                                                </td>
+                                            <?php } ?>
                                             <td>
                                                 <?php echo $value['role']; ?>
                                             </td>
@@ -209,19 +216,21 @@
         <?php $this->load->view('backend/footer'); ?>
 
         <script>
-            $.fn.dataTable.ext.search.push(
-                function(settings, data, dataIndex) {
+            <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
+                $.fn.dataTable.ext.search.push(
+                    function(settings, data, dataIndex) {
 
-                    var where = $('#businessid').val();
-                    var business = data[0];
+                        var where = $('#businessid').val();
+                        var business = data[0];
 
-                    if (where != 'all' && where != business) {
-                        return false;
+                        if (where != 'all' && where != business) {
+                            return false;
+                        }
+
+                        return true;
                     }
-
-                    return true;
-                }
-            );
+                );
+            <?php } ?>
 
             $(document).ready(function() {
                 // Event listener to the two range filtering inputs to redraw on input
