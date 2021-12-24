@@ -74,7 +74,7 @@
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
-                                <tfoot>
+                                <!-- <tfoot>
                                     <tr>
                                         <th><?php echo $this->lang->line('id') ?></th>
                                         <th><?php echo $this->lang->line('business') ?></th>
@@ -84,7 +84,7 @@
                                         <th><?php echo $this->lang->line('balance') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
-                                </tfoot>
+                                </tfoot> -->
                                 <tbody>
                                     <?php foreach ($payments as $payment) : ?>
                                         <tr>

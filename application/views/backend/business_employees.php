@@ -128,7 +128,7 @@
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
-                                <tfoot>
+                                <!-- <tfoot>
                                     <tr>
                                         <th><?php echo $this->lang->line('business') ?></th>
                                         <th><?php echo $this->lang->line('employee_name') ?></th>
@@ -139,7 +139,7 @@
                                         <th><?php echo $this->lang->line('credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
-                                </tfoot>
+                                </tfoot> -->
                                 <tbody class="employees">
 
                                 </tbody>

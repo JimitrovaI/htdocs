@@ -41,7 +41,7 @@
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
-                                        <tfoot>
+                                        <!-- <tfoot>
                                                <tr>
                                                 <th>Employee Name</th>
                                                 <th>PIN</th>
@@ -50,7 +50,7 @@
                                                 <th>User Type</th>
                                                 <th>Action</th>
                                             </tr>
-                                        </tfoot>
+                                        </tfoot> -->
                                         <tbody>
                                            <?php foreach($employee as $value): ?>
                                             <tr>

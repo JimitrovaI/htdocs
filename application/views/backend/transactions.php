@@ -97,7 +97,7 @@
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
-                                <tfoot>
+                                <!-- <tfoot>
                                     <tr>
                                         <th><?php echo $this->lang->line('id') ?></th>
                                         <th><?php echo $this->lang->line('business') ?></th>
@@ -108,7 +108,7 @@
                                         <th><?php echo $this->lang->line('status') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
-                                </tfoot>
+                                </tfoot> -->
                                 <tbody>
                                     <?php foreach ($transactions as $transaction) : ?>
                                         <tr>

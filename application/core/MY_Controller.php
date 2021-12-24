@@ -12,6 +12,7 @@ class MY_Controller extends CI_Controller
 		$this->load->library('mailer');
 		$this->load->model('business_model');
 		$this->load->model('transactions_model');
+        $this->load->model('settings_model');
 
         if ($this->session->has_userdata('language')) {
             $language = $this->session->userdata('language');

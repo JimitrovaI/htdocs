@@ -59,7 +59,7 @@
                                         <h6 class="em_job_title"></h6>
                                         <small class="text-muted p-t-30 db"><?php echo $this->lang->line('credit') ?></small>
                                         <h6 class="em_credit"></h6>
-                                        <h6 class="pending_credit"></h6>
+                                        <h6 class="available_credit"></h6>
                                     </div>
                                 </div>
                             </div>
@@ -68,7 +68,7 @@
 
                                     <div class="form-group col-md-4 m-t-10 business-select2">
                                         <label><?php echo $this->lang->line('business') ?> </label>
-                                        <select class="select2 form-control" data-placeholder="Choose a Category" tabindex="1" id="business_id" name="business_id" required>
+                                        <select class="select2 form-control" data-placeholder="Choose a Business" tabindex="1" id="business_id" name="business_id" required>
                                             <option value=""><?php echo $this->lang->line('select_business') ?></option>
                                             <?php foreach ($businesses as $business) { ?>
                                                 <option value="<?php echo $business->id ?>"><?php echo $business->name; ?></option>
@@ -78,7 +78,7 @@
 
                                     <div class="form-group col-md-8 m-t-10 business-select2">
                                         <label><?php echo $this->lang->line('employee') ?> </label>
-                                        <select class="select2 form-control" data-placeholder="Choose a Category" tabindex="1" id="business_employee" name="emp_id" required>
+                                        <select class="select2 form-control" data-placeholder="Choose a Employee" tabindex="1" id="business_employee" name="emp_id" required>
                                             <option value=""><?php echo $this->lang->line('select_employee') ?></option>
                                         </select>
                                     </div>
@@ -90,7 +90,7 @@
 
                                     <div class="form-group col-md-4 m-t-10">
                                         <label><?php echo $this->lang->line('total_price') ?></label>
-                                        <input type="number" name="cost" value="" class="form-control" id="recipient-name1" required>
+                                        <input type="number" name="cost" value="" class="form-control" id="total_price" required>
                                     </div>
 
                                     <div class="form-group col-md-4 m-t-10">
@@ -104,7 +104,7 @@
 
                                     <div class="form-group col-md-12 m-t-10">
                                         <label class="control-label"><?php echo $this->lang->line('details') ?></label>
-                                        <textarea class="form-control" name="details" id="message-text1" required rows="4"></textarea>
+                                        <textarea class="form-control" name="details" id="details" required rows="4"></textarea>
                                     </div>
 
 
@@ -159,7 +159,7 @@
 
                 $("#business_employee").on("change", function(event) {
 
-                    var employee_id = $('#business_id').val();
+                    var employee_id = $(this).val();
 
                     $('.business_employee_name').html('');
                     $('.business_name').html('');
@@ -168,7 +168,7 @@
                     $('.em_phone').html('');
                     $('.em_job_title').html('');
                     $('.em_credit').html('');
-                    $('.pending_credit').html('');
+                    $('.available_credit').html('');
 
                     if (business_id !== "") {
                         $.ajax({
@@ -187,7 +187,8 @@
                                     $('.em_phone').html(response.data.phone);
                                     $('.em_job_title').html(response.data.job_title);
                                     $('.em_credit').html("<?php echo $this->lang->line('approved_credit') ?>: "+response.data.credit);
-                                    $('.pending_credit').html("<?php echo $this->lang->line('pending_credit') ?>: "+response.data.pending_credit);
+                                    $('.available_credit').html("<?php echo $this->lang->line('available_credit') ?>: "+response.data.available_credit);
+                                    $('#total_price').attr('max', response.data.available_credit)
                                 }
                             }
                         });

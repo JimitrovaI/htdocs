@@ -194,7 +194,7 @@
                                         <th><?php echo $this->lang->line('phone') ?></th>
                                         <th><?php echo $this->lang->line('job_title') ?></th>
                                         <th><?php echo $this->lang->line('approved_credit') ?></th>
-                                        <th><?php echo $this->lang->line('pending_credit') ?></th>
+                                        <th><?php echo $this->lang->line('available_credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
@@ -218,7 +218,7 @@
                 var email = $('.td_email_' + emp_id).html();
                 var phone = $('.td_phone_' + emp_id).html();
                 var credit = $('.td_credit_' + emp_id).html();
-                var pending_credit = $('.td_pending_credit_' + emp_id).html();
+                var available_credit = $('.td_available_credit_' + emp_id).html();
                 var jobtitle = $('.td_jobtitle_' + emp_id).html();
 
                 $('.modal_employee_pin').html(pin);
@@ -227,11 +227,11 @@
                 $('.modal_employee_phone').html(phone);
                 $('.modal_employee_business').html(business);
                 $('.modal_employee_credit').html(credit);
-                $('.modal_pending_credit').html(pending_credit);
+                $('.modal_available_credit').html(available_credit);
                 $('.modal_employee_jobtitle').html(jobtitle);
 
                 $('.bill_preview').attr('src', '');
-                $('#credit_sold_cost').attr('max', credit - pending_credit);
+                $('#credit_sold_cost').attr('max', available_credit);
 
                 $('#modal_bill_file').val('');
                 $('#modal_emp_id').val(emp_id);
@@ -247,11 +247,11 @@
                         search: searchtearm
                     },
                     dataType: 'json',
-                    beforeSend: function() {
-                        $('#businessemploysearch').val('<?php echo $this->lang->line('loading') ?>')
-                        $('#businessemploysearch').attr('disabled', true)
-                        $(".searchbtn").attr('disabled', true)
-                    },
+                    // beforeSend: function() {
+                    //     $('#businessemploysearch').val('<?php echo $this->lang->line('loading') ?>')
+                    //     $('#businessemploysearch').attr('disabled', true)
+                    //     $(".searchbtn").attr('disabled', true)
+                    // },
                     success: function(response) {
                         $('#businessemploysearch').val(searchtearm)
                         $('#businessemploysearch').attr('disabled', false)

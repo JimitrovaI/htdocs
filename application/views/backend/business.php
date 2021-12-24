@@ -190,7 +190,7 @@
                                         <?php } ?>
                                     </tr>
                                 </thead>
-                                <tfoot>
+                                <!-- <tfoot>
                                     <tr>
                                         <th><?php echo $this->lang->line('business') ?></th>
                                         <th><?php echo $this->lang->line('contact') ?></th>
@@ -200,7 +200,7 @@
                                             <th><?php echo $this->lang->line('action') ?></th>
                                         <?php } ?>
                                     </tr>
-                                </tfoot>
+                                </tfoot> -->
 
                                 <tbody>
                                     <?php foreach ($businesses as $value) { ?>

@@ -27,13 +27,6 @@
         public function business()
         {
             if ($this->session->userdata('user_login_access') != False) {
-                
-                // if($this->mailer->send_mail('vadim.kim2022@gmail.com', 'Pharmacy Mail Test', 'mail test success')){
-                //     echo 'send successfully';
-                // }else{
-                //     echo 'send failed';
-                // }
-                // exit;
                 $data['businesses'] = $this->business_model->getBusinessInfo();
                 $this->load->view('backend/business', $data);
             } else {
@@ -445,7 +438,7 @@
                                 $subject = "Successfully Sign up";
                                 $content = "Your account has been signed up successfully. <br>";
                                 $content .= "From now you can buy all products of our pharmacy using your business credit. <br>";
-                                $content .= "Your profile <br>";
+                                $content .= "<b>Your profile</b> <br>";
                                 $content .= "Business : $employeeProfile->business <br>";
                                 $content .= "Name     : $employeeProfile->full_name <br>";
                                 $content .= "Phone    : $employeeProfile->em_phone <br>";
@@ -694,6 +687,7 @@
                     if ($is_pay_date && $credit > 0) {
                         $pay_date = date('Y-m-d', strtotime(date('Y-m-d') . " -1 day"));
                         $this->transactions_model->overdueBusinessTransactions($business['id'], $pay_date);
+                        $this->transactions_model->init_usedcredit($business['id']);
                     }
                 }
             } else {

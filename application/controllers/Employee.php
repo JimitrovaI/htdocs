@@ -139,12 +139,12 @@ class Employee extends MY_Controller
                             );
                             if ($id) {
                                 $success = $this->employee_model->Update($data, $id);
-                                #$this->session->set_flashdata('feedback','Successfully Updated');
+                                // $this->session->set_flashdata('feedback','Successfully Updated');
                                 echo "Successfully Updated";
                             } else {
                                 $success = $this->employee_model->Add($data);
-                                #$this->confirm_mail_send($email,$pass_hash);        
-                                #$this->session->set_flashdata('feedback','Successfully Created');
+                                // $this->confirm_mail_send($email,$pass_hash);        
+                                // $this->session->set_flashdata('feedback','Successfully Created');
                                 echo "Successfully Added";
                             }
                         }
@@ -171,14 +171,14 @@ class Employee extends MY_Controller
                         );
                         if ($id) {
                             $success = $this->employee_model->Update($data, $id);
-                            #$this->session->set_flashdata('feedback','Successfully Updated');
+                            // $this->session->set_flashdata('feedback','Successfully Updated');
                             echo "Successfully Updated";
-                            #redirect('employee/Add_employee'); 
+                            // redirect('employee/Add_employee'); 
                         } else {
                             $success = $this->employee_model->Add($data);
-                            #$this->confirm_mail_send($email,$pass_hash);        
+                            // $this->confirm_mail_send($email,$pass_hash);        
                             echo "Successfully Added";
-                            #redirect('employee/Add_employee');                     
+                            // redirect('employee/Add_employee');                     
                         }
                     }
                 }

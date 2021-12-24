@@ -35,7 +35,7 @@
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
-                                <tfoot>
+                                <!-- <tfoot>
                                     <tr>
                                         <th><?php echo $this->lang->line('business') ?></th>
                                         <th><?php echo $this->lang->line('total_count') ?></th>
@@ -43,7 +43,7 @@
                                         <th><?php echo $this->lang->line('total_price') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
-                                </tfoot>
+                                </tfoot> -->
                                 <tbody>
                                     <?php foreach ($business_transactions as $transaction) : ?>
                                         <tr>

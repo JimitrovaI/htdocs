@@ -16,7 +16,7 @@ class Mailer {
         $mail = new PHPMailer();
         $mail->CharSet = 'UTF-8';
         $pharmacy_name = 'Pharmacy';
-
+        
 		$mail->IsSMTP();
 		$mail->SMTPAuth   = true;
 		$mail->SMTPSecure = 'ssl';
@@ -24,8 +24,8 @@ class Mailer {
 		$mail->Port       = 465;
 		$mail->Username   = 'info@dioniciofarmac.com.do';
 		$mail->Password   = 'S0p0rt3.';
-		$mail->SetFrom('info@dioniciofarmac.com.d', $pharmacy_name);
-		$mail->AddReplyTo('info@dioniciofarmac.com.d', 'info@dioniciofarmac.com.d');
+		$mail->SetFrom('info@dioniciofarmac.com.do', $pharmacy_name);
+		$mail->AddReplyTo('info@dioniciofarmac.com.do', 'info@dioniciofarmac.com.do');
         
         if (!empty($FILES)) {
             if (isset($_FILES['files']) && !empty($_FILES['files'])) {
@@ -41,6 +41,7 @@ class Mailer {
                 }
             }
         }
+
         if ($cc != "") {
             $mail->AddCC($cc);
         }
@@ -49,11 +50,11 @@ class Mailer {
         $mail->Body = $body;
         $mail->AltBody = $body;
         $mail->AddAddress($toemail);
-        if ($mail->Send()) {
-            return true;
-        } else {
-            return false;
-        }
+        // if ($mail->Send()) {
+        //     return true;
+        // } else {
+        //     return false;
+        // }
     }
 
 }

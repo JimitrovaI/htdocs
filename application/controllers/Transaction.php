@@ -164,11 +164,21 @@
         function saveTransaction()
         {
             if ($this->session->userdata('user_login_access') != False) {
+
                 $id = $this->input->post('id');
+                $isedit = !empty($id);
+                
                 $emp_id = $this->input->post('emp_id');
                 $details = $this->input->post('details');
                 $buy_date = $this->input->post('date');
                 $cost = $this->input->post('cost');
+                $add_used_credit = $cost;
+
+                if($isedit){
+                    $p_transaction = $this->transactions_model->get($id);
+                    $add_used_credit -= $p_transaction['cost'] ;
+                }
+
                 $buy_staff_id = $this->input->post('buy_staff_id');
                 if (empty($buy_staff_id)) {
                     $buy_staff_id = $this->session->userdata('staff_id');
@@ -183,6 +193,8 @@
                     $response = array('error' => 1, 'msg' => validation_errors());
                     echo json_encode($response);
                 } else {
+                    $bill_url = '';
+
                     if (isset($_FILES['bill']) && !empty($_FILES['bill']['name'])) {
                         $uploaddir = './assets/images/bills/';
                         if (!is_dir($uploaddir) && !mkdir($uploaddir)) {
@@ -208,68 +220,72 @@
                         } else {
                             $path = $this->upload->data();
                             $bill_url = $path['file_name'];
-                            $data = array(
-                                'emp_id' => $emp_id,
-                                'details' => $details,
-                                'cost' => $cost,
-                                'bill' => $bill_url,
-                                'buy_staff_id' => $buy_staff_id,
-                            );
-
-                            if (!empty($buy_date)) {
-                                $data['buy_date'] = $buy_date;
-                            }
-
-                            if (!empty($id)) {
-                                $data['id'] = $id;
-                            }
-
-                            $success = $this->transactions_model->add($data);
-                            if (empty($id) && $success) {
-                                $employeeProfile = $this->business_model->GetEmployeeById($emp_id);
-                                $employee_availablecredit = empty($employeeProfile->em_credit) ? (!empty($employeeProfile->em_role_id) ? $employeeProfile->role_credit : $employeeProfile->detault_credit) : $employeeProfile->em_credit;
-                                $employee_credit = $employee_availablecredit - $employeeProfile->pending_credit;
-                                $buy_time = date('Y-m-d H:i');
-                                $pharmacist = $this->employee_model->get_by_id($buy_staff_id);
-                                // $toemail = $employeeProfile->em_email;
-                                $toemail = 'vadim.kim2022@gmail.com';
-                                $subject = "Purchased with Credit";
-                                $content = "You have purchased some pharms [details: $details] from our Pharmacy with your company credit($cost) at $buy_time. <br>";
-                                $content .= "Now your reamined credit is $employee_credit for this term. <br>";
-                                $content .= "<b>Pharmacist profile</b> <br>";
-                                $content .= "Name   : $pharmacist->first_name $pharmacist->last_name <br>";
-                                $content .= "Phone  : $pharmacist->em_phone <br>";
-                                $content .= "Email  : $pharmacist->em_phone <br>";
-                                $this->mailer->send_mail($toemail, $subject, $content);
-
-
-                                $businessInfo = $this->business_model->getBusinessInfo($employeeProfile->business_id);
-                                // $toemail = $businessInfo['contact_email'];
-                                $toemail = 'vadim.kim2022@gmail.com';
-                                $subject = "Your employee purchased with Credit.";
-                                $content = "Employee[$employeeProfile->full_name] purchased some pharms [details: $details] from our Pharmacy with your company credit($cost) at $buy_time. <br>";
-                                $content .= "<b>Employee profile</b> <br>";
-                                $content .= "Name   : $employeeProfile->full_name<br>";
-                                $content .= "PIN  : $employeeProfile->em_code <br>";
-                                $content .= "Phone  : $employeeProfile->em_phone <br>";
-                                $content .= "Email  : $employeeProfile->em_email <br>";
-                                $content .= "Approved Credit  : $employee_availablecredit <br>";
-                                $content .= "Usable Credit  : $employee_credit <br>";
-                                $content .= "<br>";
-                                $content .= "<b>Pharmacist profile</b> <br>";
-                                $content .= "Name   : $pharmacist->first_name $pharmacist->last_name <br>";
-                                $content .= "Phone  : $pharmacist->em_phone <br>";
-                                $content .= "Email  : $pharmacist->em_phone <br>";
-
-                                $this->mailer->send_mail($toemail, $subject, $content);
-
-                            }
-                            echo $this->lang->line('success_message');
                         }
-                    } else {
+                    } elseif(empty($id)) {
                         $response = array('error' => 1, 'msg' => 'Bill required');
                         echo json_encode($response);
                     }
+
+                    $data = array(
+                        'emp_id' => $emp_id,
+                        'details' => $details,
+                        'cost' => $cost,
+                        'buy_staff_id' => $buy_staff_id,
+                    );
+
+                    if (!empty($bill_url)) {
+                        $data['bill'] = $bill_url;
+                    }
+
+                    if (!empty($buy_date)) {
+                        $data['buy_date'] = $buy_date;
+                    }
+
+                    if (!empty($id)) {
+                        $data['id'] = $id;
+                    }
+
+                    $success = $this->transactions_model->add($data);
+                    $this->transactions_model->update_usedcredit($emp_id, $add_used_credit);
+                    if (empty($id) && $success) {
+                        $employeeProfile = $this->business_model->GetEmployeeById($emp_id);
+                        $employee_availablecredit = empty($employeeProfile->em_credit) ? (!empty($employeeProfile->em_role_id) ? $employeeProfile->role_credit : $employeeProfile->detault_credit) : $employeeProfile->em_credit;
+                        $employee_credit = $employee_availablecredit - $employeeProfile->pending_credit;
+                        $buy_time = date('Y-m-d H:i');
+                        $pharmacist = $this->employee_model->get_by_id($buy_staff_id);
+                        // $toemail = $employeeProfile->em_email;
+                        $toemail = 'vadim.kim2022@gmail.com';
+                        $subject = "Purchased with Credit";
+                        $content = "You have purchased some pharms [details: $details] from our Pharmacy with your company credit($cost) at $buy_time. <br>";
+                        $content .= "Now your reamined credit is $employee_credit for this term. <br>";
+                        $content .= "<b>Pharmacist profile</b> <br>";
+                        $content .= "Name   : $pharmacist->first_name $pharmacist->last_name <br>";
+                        $content .= "Phone  : $pharmacist->em_phone <br>";
+                        $content .= "Email  : $pharmacist->em_phone <br>";
+                        $this->mailer->send_mail($toemail, $subject, $content);
+
+
+                        $businessInfo = $this->business_model->getBusinessInfo($employeeProfile->business_id);
+                        // $toemail = $businessInfo['contact_email'];
+                        $toemail = 'vadim.kim2022@gmail.com';
+                        $subject = "Your employee purchased with Credit.";
+                        $content = "Employee[$employeeProfile->full_name] purchased some pharms [details: $details] from our Pharmacy with your company credit($cost) at $buy_time. <br>";
+                        $content .= "<b>Employee profile</b> <br>";
+                        $content .= "Name   : $employeeProfile->full_name<br>";
+                        $content .= "PIN  : $employeeProfile->em_code <br>";
+                        $content .= "Phone  : $employeeProfile->em_phone <br>";
+                        $content .= "Email  : $employeeProfile->em_email <br>";
+                        $content .= "Approved Credit  : $employee_availablecredit <br>";
+                        $content .= "Usable Credit  : $employee_credit <br>";
+                        $content .= "<br>";
+                        $content .= "<b>Pharmacist profile</b> <br>";
+                        $content .= "Name   : $pharmacist->first_name $pharmacist->last_name <br>";
+                        $content .= "Phone  : $pharmacist->em_phone <br>";
+                        $content .= "Email  : $pharmacist->em_phone <br>";
+
+                        $this->mailer->send_mail($toemail, $subject, $content);
+                    }
+                    echo $this->lang->line('success_message');
                 }
             } else {
                 redirect(base_url(), 'refresh');
@@ -302,8 +318,10 @@
             } else {
                 $employee = $this->business_model->GetEmployeeById($employee_id);
                 $credit = empty($employee->em_credit) ? (empty($employee->role_credit) ? $employee->default_credit : $employee->role_credit) : $employee->em_credit;
+                $used_credit = $employee->em_used_credit?$employee->em_used_credit : 0;
+                $available_credit = $credit - $used_credit;
                 $img = empty($employee->em_image) ? base_url() . "assets/images/users/user.png" : base_url() . "assets/images/business/" . $employee->em_image;
-                $response = array('success' => 1, 'data' => array('name' => $employee->full_name, 'business' => $employee->business, 'email' => $employee->em_email, 'phone' => $employee->em_phone, 'job_title' => $employee->em_job_title, 'credit' => $credit, 'pending_credit' => $employee->pending_credit, 'img' => $img));
+                $response = array('success' => 1, 'data' => array('name' => $employee->full_name, 'business' => $employee->business, 'email' => $employee->em_email, 'phone' => $employee->em_phone, 'job_title' => $employee->em_job_title, 'credit' => $credit, 'available_credit' => $available_credit, 'img' => $img));
                 echo json_encode($response);
             }
         }
@@ -395,7 +413,7 @@
 
                     $insert_id = $this->transactions_model->addPayment($data);
                     if (empty($id) && $insert_id) {
-                        $pending_transactions = $this->transactions_model->searchTansactions(array('business_id' => $business_id, 'status' => 'PENDING'));
+                        $pending_transactions = $this->transactions_model->searchTansactions(array('business_id' => $business_id, 'unpaid' => 'unpaid'));
                         $balance = $paid_amount + $added_amount;
                         $paid_transactions = array();
                         foreach ($pending_transactions as $transaction) {
@@ -412,12 +430,12 @@
                         // $toemail = $businessInfo['contact_email'];
                         $toemail = 'vadim.kim2022@gmail.com';
                         $subject = "Credit Payment";
-                        $content = "Your company[".$businessInfo['name']."] paid $".$paid_amount." and payment was checked by $user_name [Email: $user_email, Phone: $user_phone] of pharmacy at $pay_time. <br>";
+                        $content = "Your company[" . $businessInfo['name'] . "] paid $" . $paid_amount . " and payment was checked by $user_name [Email: $user_email, Phone: $user_phone] of pharmacy at $pay_time. <br>";
                         $content .= "<b>Payment Details</b> <br>";
                         $content .= "Previous Balance : $added_amount <br>";
                         $content .= "Payment Amount  : $paid_amount <br>";
-                        $content .= "Paid Transactions and Credit    : ".count($paid_transactions).", $".$paid_amount + $added_amount-$balance." <br>";
-                        $content .= "Unpaid Transactions and Credit  : ".$businessInfo['pending_count']+$businessInfo['overdue_count'].", $".$businessInfo['pending_credit']+ $businessInfo['overdue_credit']." <br>";
+                        $content .= "Paid Transactions and Credit    : " . count($paid_transactions) . ", $" . ($paid_amount + $added_amount - $balance) . " <br>";
+                        $content .= "Unpaid Transactions and Credit  : " . ($businessInfo['pending_count'] + $businessInfo['overdue_count']) . ", $" . ($businessInfo['pending_credit'] + $businessInfo['overdue_credit']) . " <br>";
                         $content .= "Current Balance  : $balance <br>";
                         $this->mailer->send_mail($toemail, $subject, $content);
                     }

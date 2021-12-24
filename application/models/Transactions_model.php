@@ -101,6 +101,9 @@ class Transactions_model extends CI_Model
       if ($key == 'payment_id') {
         $this->db->where("business_transactions.payment_id", $value);
       }
+      if ($key == 'unpaid') {
+        $this->db->where("business_transactions.status != 'COMPLETE'");
+      }
     }
 
     return $this->db->get()->result_array();
@@ -184,5 +187,17 @@ class Transactions_model extends CI_Model
     } else {
       return $insert_id;
     }
+  }
+
+  public function update_usedcredit($emp_id, $added_credit){
+    $this->db->set("em_used_credit", "`em_used_credit` + $added_credit", false);
+    $this->db->where('id', $emp_id);
+    $this->db->update('business_employees');
+  }
+
+  public function init_usedcredit($business_id){
+    $this->db->set('em_used_credit', 0);
+    $this->db->where('business_id', $business_id);
+    $this->db->update('business_employees');
   }
 }

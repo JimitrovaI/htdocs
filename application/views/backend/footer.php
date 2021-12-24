@@ -1,6 +1,6 @@
             </div>
-
-            <footer class="footer"> ©2021 Edwin Sanchez IT Center </footer>
+            <?php $settingsvalue = $this->settings_model->GetSettingsValue(); ?>
+            <footer class="footer"> <?= $settingsvalue->copyright ?> </footer>
 
             </div>
 
@@ -199,6 +199,8 @@
                         submitHandler: function(form) {
                             var formval = form;
                             var url = $(form).attr('action');
+                            var submit_btn = $(form).find('button[type="submit"]')
+                            var save_content = submit_btn.html();
 
                             // Create an FormData object
                             var data = new FormData(formval);
@@ -212,12 +214,16 @@
                                 contentType: false,
                                 cache: false,
                                 timeout: 600000,
+                                beforeSend: function() {
+                                    submit_btn.html("<i class='fa fa-spinner fa-spin'></i> <?php echo $this->lang->line('loading')?>");
+                                },
                                 success: function(response) {
                                     console.log(response);
                                     try {
                                         result = JSON.parse(response);
                                         $(".message").removeClass('success').addClass('error');
                                         $(".message").fadeIn('fast').delay(3000).fadeOut('fast').html(result.msg);
+                                        submit_btn.html(save_content);
                                     } catch (e) {
                                         $(".message").removeClass('error').addClass('success');
                                         $(".message").fadeIn('fast').delay(3000).fadeOut('fast').html(response);

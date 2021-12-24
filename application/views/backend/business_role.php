@@ -172,7 +172,7 @@
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
                                 </thead>
-                                <tfoot>
+                                <!-- <tfoot>
                                     <tr>
                                         <?php if ($this->session->userdata('user_business') == 'pharmacy') { ?>
                                             <th><?php echo $this->lang->line('business') ?></th>
@@ -181,7 +181,7 @@
                                         <th><?php echo $this->lang->line('credit') ?></th>
                                         <th><?php echo $this->lang->line('action') ?></th>
                                     </tr>
-                                </tfoot>
+                                </tfoot> -->
 
                                 <tbody>
                                     <?php foreach ($business_roles as $value) { ?>
